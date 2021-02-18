@@ -1,34 +1,35 @@
 package de.neuefische.githubbingomaster.services;
 
-import de.neuefische.githubbingomaster.db.UserDB;
+import de.neuefische.githubbingomaster.model.GitHubUser;
 import de.neuefische.githubbingomaster.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class GitHubService {
+    String baseURL = "https://api.github.com/users/";
+    private final RestTemplate restTemplate;
 
-    UserDB userDb;
-    ApiService apiService;
-
+    //
     @Autowired
-    public GitHubService(UserDB userDb,ApiService apiService){
-        this.userDb=userDb;
-        this.apiService=apiService;
+    public GitHubService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
-    public List<User> getUsers() {
-        return userDb.getUsers();
-    }
-
-    public Optional<User> getUser(int id) {
-        return apiService.getUser(id);
-    }
-
-    public User addUser(User user) {
-        return userDb.addUser(user);
+    public Optional<GitHubUser> getUser(String login) {
+        try {
+            ResponseEntity<GitHubUser> newUser = restTemplate.getForEntity(baseURL + login, GitHubUser.class);
+            if (newUser.hasBody() && newUser.getBody() != null) {
+                return Optional.of(newUser.getBody());
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return Optional.empty();
     }
 }

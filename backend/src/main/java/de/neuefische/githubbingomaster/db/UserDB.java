@@ -1,4 +1,5 @@
 package de.neuefische.githubbingomaster.db;
+import de.neuefische.githubbingomaster.model.GitHubUser;
 import de.neuefische.githubbingomaster.model.User;
 import org.springframework.stereotype.Repository;
 
@@ -8,17 +9,17 @@ import java.util.List;
 @Repository
 public class UserDB {
 
-    private List<User> userList;
+    private List<GitHubUser> userList;
 
     public UserDB () {
-        this.userList = new ArrayList<User>();
+        this.userList = new ArrayList<GitHubUser>();
     }
 
-    public List<User> getUsers() {
+    public List<GitHubUser> getUsers() {
         return userList;
     }
 
-    public User addUser(User user) {
+    public GitHubUser addUser(GitHubUser user) {
         userList.add(user);
         return user;
     }
