@@ -1,28 +1,40 @@
 package de.neuefische.githubbingomaster.api;
 
 import de.neuefische.githubbingomaster.model.GithubUser;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Optional;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class GithubConnectorTest {
 
-    public final String url = "http://api.test.com";
+    public final String url = "https://api.github.com";
 
 
     @Test
     public void getUserShouldReturnUser() {
         //Given
         String name = "magnus";
-        TestRestTemplate mockRestTemplate = mock(TestRestTemplate.class);
-        GithubConnector githubConnector = new GithubConnector(url, mockRestTemplate);
+        RestTemplate mockRestTemplate = mock(RestTemplate.class);
+        GithubConnector githubConnector = new GithubConnector(mockRestTemplate);
+        GithubUser mockedUser = new GithubUser("magnus", "http://awesomepics.com/magnus");
 
-        when(githubConnector.getUser()).then(new GithubUser("magnus", "http://awesomepics.com/magnus"))
+        when(mockRestTemplate.getForEntity(url + "/users/" + name, GithubUser.class)).thenReturn(new ResponseEntity<>(mockedUser, HttpStatus.OK));
 
-        //
+        //When
+        Optional<GithubUser> testUser = githubConnector.getUser(name);
+
+        // Then
+        assertThat(testUser.get(), is(new GithubUser("magnus", "http://awesomepics.com/magnus")));
 
     }
 
