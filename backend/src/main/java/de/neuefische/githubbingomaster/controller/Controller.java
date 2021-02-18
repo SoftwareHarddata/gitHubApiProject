@@ -23,18 +23,17 @@ public class Controller {
 
     @GetMapping("/users")
     public List<User> getUsers(){
-        return GitHubService.getUsers();
+        return gitHubService.getUsers();
     }
 
     @GetMapping("/user/{id}")
-    public User getUser(@PathVariable String id){
-        Optional<User> user = GitHubService.getUser(id);
-        return user.orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+    public User getUser(@PathVariable int id){
+        return gitHubService.getUser(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
     }
 
     @PostMapping
     public User addUser(@RequestBody User user){
-        return GitHubService.addUser(user);
+        return gitHubService.addUser(user);
     }
 
 
