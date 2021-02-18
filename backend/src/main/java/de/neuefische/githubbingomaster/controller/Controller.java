@@ -1,44 +1,39 @@
 package de.neuefische.githubbingomaster.controller;
 
+import de.neuefische.githubbingomaster.model.GitHubUser;
+import de.neuefische.githubbingomaster.model.RequestUser;
 import de.neuefische.githubbingomaster.model.User;
-import de.neuefische.githubbingomaster.services.GitHubService;
+import de.neuefische.githubbingomaster.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
 public class Controller {
 
-    private final GitHubService gitHubService;
+    private final UserService userService;
 
     @Autowired
-    public Controller(GitHubService gitHubService){
-        this.gitHubService=gitHubService;
+    public Controller(UserService userService){
+        this.userService = userService;
     }
 
     @GetMapping("/users")
-    public List<User> getUsers(){
-        return GitHubService.getUsers();
+    public List<GitHubUser> getUsers(){
+        return userService.getUsers();
     }
 
-    @GetMapping("/user/{id}")
-    public User getUser(@PathVariable String id){
-        Optional<User> user = GitHubService.getUser(id);
-        return user.orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+    @GetMapping("/user/{login}")
+    public GitHubUser getUser(@PathVariable String login){
+        return userService.getUser(login).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
     }
 
     @PostMapping
-    public User addUser(@RequestBody User user){
-        return GitHubService.addUser(user);
+    public GitHubUser addUser(@RequestBody RequestUser requestUser){
+        return userService.addUser(requestUser).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
     }
-
-
-
-
-
 }

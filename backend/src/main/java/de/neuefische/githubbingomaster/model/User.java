@@ -7,6 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class User {
     String name;
+    String login;
     int id;
     String avatarUrl;
 }
