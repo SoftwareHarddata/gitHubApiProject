@@ -6,6 +6,7 @@ import de.neuefische.githubbingomaster.model.AddUserDto;
 import de.neuefische.githubbingomaster.model.User;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +48,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Adding a new user via its github login adds the user to the database")
     public void addNewUser(){
         // GIVEN
         String gitHubUser = "mr-foobar";
@@ -67,6 +69,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Adding a user twice results in 400 (Bad Request)")
     public void addExistingUser(){
         // GIVEN
         String gitHubUser = "mr-foobar";
@@ -86,6 +89,7 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Adding a user who is not a github user results in 400 (Bad Request)")
     public void addNonGitHubUser(){
         // GIVEN
         String gitHubUser = "mr-foobar";

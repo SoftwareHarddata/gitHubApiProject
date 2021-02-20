@@ -4,6 +4,7 @@ import de.neuefische.githubbingomaster.db.UserDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +22,7 @@ class UserServiceTest {
     private final UserService userService = new UserService(gitHubApiService, userDb);
 
     @Test
+    @DisplayName("A new user whose name is a github login is added")
     public void testAddANewUser(){
         // GIVEN
         String gitHubUser = "mr-foobar";
@@ -49,6 +51,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("A new user whose name is not a github login is not added")
     public void testAddANonGithubUser(){
         // GIVEN
         String gitHubUser = "mr-foobar";
@@ -65,6 +68,7 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("An already added user is not added again")
     public void testAddExistingUser(){
         // GIVEN
         String gitHubUser = "mr-foobar";

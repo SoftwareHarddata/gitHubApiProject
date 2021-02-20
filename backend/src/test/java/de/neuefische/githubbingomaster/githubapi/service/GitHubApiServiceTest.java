@@ -22,7 +22,7 @@ class GitHubApiServiceTest {
     private final GitHubApiService gitHubApiService = new GitHubApiService(restTemplate);
 
     @Test
-    @DisplayName("returns a non empty optional of an existing github user")
+    @DisplayName("Returns a the profile of a github user")
     public void getsAGitHubProfile(){
         // GIVEN
         String gitHubUser = "super-user";
@@ -40,7 +40,7 @@ class GitHubApiServiceTest {
     }
 
     @Test
-    @DisplayName("returns a empty optional of an non existing github user")
+    @DisplayName("Returns aempty optional when the user is not a github user")
     public void getNonExistingUser(){
         // GIVEN
         String gitHubUser = "no-a-user";
