@@ -17,24 +17,26 @@ import static org.mockito.Mockito.when;
 
 class GitHubApiServiceTest {
 
-    private RestTemplate restTemplate = mock(RestTemplate.class);
+    private final RestTemplate restTemplate = mock(RestTemplate.class);
 
-    private GitHubApiService gitHubApiService = new GitHubApiService(restTemplate);
+    private final GitHubApiService gitHubApiService = new GitHubApiService(restTemplate);
 
     @Test
     @DisplayName("returns a non empty optional of an existing github user")
     public void getsAGitHubProfile(){
         // GIVEN
         String gitHubUser = "super-user";
-        GitHubProfile profile = GitHubProfile.builder().login(gitHubUser).avatarUrl("https://avatars.githubusercontent.com/u/48794499?v=4").build();
+        String avatarUrl = "https://avatars.githubusercontent.com/u/48794499?v=4";
+        String gitHubUrl = "https://api.github.com/users/"+gitHubUser;
+        GitHubProfile profile = GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build();
         ResponseEntity<GitHubProfile> response = ResponseEntity.ok(profile);
-        when(restTemplate.getForEntity("https://api.github.com/users/"+gitHubUser, GitHubProfile.class)).thenReturn(response);
+        when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class)).thenReturn(response);
 
         // WHEN
         Optional<GitHubProfile> actual = gitHubApiService.getUserprofile(gitHubUser);
 
         // THEN
-        assertThat(actual.get(), is(GitHubProfile.builder().login(gitHubUser).avatarUrl("").build()));
+        assertThat(actual.get(), is(GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
     }
 
     @Test
@@ -42,7 +44,8 @@ class GitHubApiServiceTest {
     public void getNonExistingUser(){
         // GIVEN
         String gitHubUser = "no-a-user";
-        when(restTemplate.getForEntity("https://api.github.com/users/"+gitHubUser, GitHubProfile.class))
+        String gitHubUrl = "https://api.github.com/users/"+gitHubUser;
+        when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class))
                 .thenThrow(RestClientException.class);
 
         // WHEN
