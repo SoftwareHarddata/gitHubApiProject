@@ -40,4 +40,8 @@ public class UserService {
     public List<User> listUsers() {
         return userDb.list();
     }
+
+    public Optional<User> getUserByUsername(String username) {
+        return userDb.findByUsername(username);
+    }
 }

@@ -107,4 +107,32 @@ class UserServiceTest {
                 new User("secondUser", "someOtheravatar")));
     }
 
+    @Test
+    @DisplayName("getUserByUsername should return existing user from Db")
+    public void getExistingUser(){
+        //GIVEN
+        String username = "existingUserName";
+        when(userDb.findByUsername(username)).thenReturn(Optional.of(new User(username, "someavatar")));
+
+        //WHEN
+        Optional<User> userByUsername = userService.getUserByUsername(username);
+
+        //THEN
+        assertThat(userByUsername.get(), is(new User(username, "someavatar")));
+    }
+
+    @Test
+    @DisplayName("getUserByUsername should return empty user from Db")
+    public void getNotExistingUser(){
+        //GIVEN
+        String username = "notExistingUserName";
+        when(userDb.findByUsername(username)).thenReturn(Optional.empty());
+
+        //WHEN
+        Optional<User> userByUsername = userService.getUserByUsername(username);
+
+        //THEN
+        assertThat(userByUsername.isEmpty(), is(true));
+    }
+
 }
