@@ -8,9 +8,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -87,6 +89,22 @@ class UserServiceTest {
 
         // THEN
         verify(userDb, never()).addUser(any());
+    }
+
+    @Test
+    @DisplayName("List users should return list from db")
+    public void listUsers(){
+        //GIVEN
+        when(userDb.list()).thenReturn(List.of(
+                new User("supergithubuser", "someavatar"),
+                new User("secondUser", "someOtheravatar")));
+        //WHEN
+        List<User> users = userService.listUsers();
+
+        //THEN
+        assertThat(users, containsInAnyOrder(
+                new User("supergithubuser", "someavatar"),
+                new User("secondUser", "someOtheravatar")));
     }
 
 }

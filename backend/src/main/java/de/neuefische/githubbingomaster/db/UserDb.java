@@ -4,6 +4,7 @@ import de.neuefische.githubbingomaster.model.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -22,5 +23,9 @@ public class UserDb {
 
     public void clear(){
         users.clear();
+    }
+
+    public List<User> list() {
+        return Collections.unmodifiableList(users);
     }
 }
