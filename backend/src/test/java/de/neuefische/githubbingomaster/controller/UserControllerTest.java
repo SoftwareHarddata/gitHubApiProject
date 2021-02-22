@@ -122,4 +122,31 @@ class UserControllerTest {
                 new User("supergithubuser", "someavatar"),
                 new User("secondUser", "someOtheravatar")));
     }
+
+    @Test
+    @DisplayName("Get user by username should return user")
+    public void getUser(){
+        //GIVEN
+        userDb.addUser(new User("supergithubuser", "someavatar"));
+        userDb.addUser(new User("secondUser", "someOtheravatar"));
+        //WHEN
+        ResponseEntity<User> response = testRestTemplate.getForEntity(getUrl()+"/secondUser", User.class);
+
+        //THEN
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(new User("secondUser", "someOtheravatar")));
+    }
+
+    @Test
+    @DisplayName("Get user by username should return not found 404 when user not exists")
+    public void getUserNotFound(){
+        //GIVEN
+        userDb.addUser(new User("supergithubuser", "someavatar"));
+        userDb.addUser(new User("secondUser", "someOtheravatar"));
+        //WHEN
+        ResponseEntity<Void> response = testRestTemplate.getForEntity(getUrl()+"/unknownUser", Void.class);
+
+        //THEN
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    }
 }
