@@ -22,7 +22,7 @@ class GitHubApiServiceTest {
     private final GitHubApiService gitHubApiService = new GitHubApiService(restTemplate);
 
     @Test
-    @DisplayName("Returns a the profile of a github user")
+    @DisplayName("Returns profile of a github user")
     public void getsAGitHubProfile(){
         // GIVEN
         String gitHubUser = "super-user";
