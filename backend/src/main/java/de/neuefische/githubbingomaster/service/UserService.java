@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,5 +35,13 @@ public class UserService {
         GitHubProfile profile = optionalProfile.get();
         User user = User.builder().name(profile.getLogin()).avatar(profile.getAvatarUrl()).build();
         return userDb.addUser(user);
+    }
+
+    public List<User> listUsers() {
+        return userDb.list();
+    }
+
+    public Optional<User> getUserByUsername(String username) {
+        return userDb.findByUsername(username);
     }
 }

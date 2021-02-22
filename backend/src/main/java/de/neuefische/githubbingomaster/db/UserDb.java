@@ -3,8 +3,7 @@ package de.neuefische.githubbingomaster.db;
 import de.neuefische.githubbingomaster.model.User;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Repository
 public class UserDb {
@@ -20,7 +19,17 @@ public class UserDb {
         return user;
     }
 
-    public void clear(){
+    public void clear() {
         users.clear();
+    }
+
+    public List<User> list() {
+        return Collections.unmodifiableList(users);
+    }
+
+    public Optional<User> findByUsername(String username) {
+        return users.stream().filter(user ->
+                Objects.equals(user.getName(), username))
+                .findAny();
     }
 }
