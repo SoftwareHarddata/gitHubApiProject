@@ -19,6 +19,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -103,5 +104,22 @@ class UserControllerTest {
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    @DisplayName("Get user should return a list of all users")
+    public void getAllUsers() {
+        //GIVEN
+        userDb.addUser(new User("supergithubuser", "someavatar"));
+        userDb.addUser(new User("secondUser", "someOtheravatar"));
+
+        //WHEN
+        ResponseEntity<User[]> response = testRestTemplate.getForEntity(getUrl(), User[].class);
+
+        //THEN
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), arrayContainingInAnyOrder(
+                new User("supergithubuser", "someavatar"),
+                new User("secondUser", "someOtheravatar")));
     }
 }
