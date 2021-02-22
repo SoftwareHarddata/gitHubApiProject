@@ -4,6 +4,7 @@ import de.neuefische.githubbingomaster.db.UserDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,43 +17,50 @@ import static org.mockito.Mockito.*;
 
 class UserServiceTest {
 
+    private final GitHubApiService gitHubApiService = mock(GitHubApiService.class);
+    private final UserDb userDb = mock(UserDb.class);
+    private final UserService userService = new UserService(gitHubApiService, userDb);
+
     @Test
+    @DisplayName("A new user whose name is a github login is added")
     public void testAddANewUser(){
         // GIVEN
-        GitHubApiService gitHubApiService = mock(GitHubApiService.class);
-        UserDb userDb = mock(UserDb.class);
-        when(gitHubApiService.getUserprofile("mr-foobar"))
-                .thenReturn(Optional.of(
-                        GitHubProfile.builder()
-                                .login("mr-foobar")
-                                .avatarUrl("mr-foobars-avatar")
-                                .build()));
-        when(userDb.hasUser("mr-foobar")).thenReturn(false);
-        when(userDb.addUser(
-                User.builder().name("mr-foobar").avatar("mr-foobars-avatar").build())
-        ).thenReturn(User.builder().name("mr-foobar").avatar("mr-foobars-avatar").build());
-        UserService userService = new UserService(gitHubApiService, userDb);
+        String gitHubUser = "mr-foobar";
+        String avatarUrl = "mr-foobars-avatar";
+        GitHubProfile gitHubProfile = GitHubProfile.builder()
+                .login(gitHubUser)
+                .avatarUrl(avatarUrl)
+                .build();
+
+        when(gitHubApiService.getUserprofile(gitHubUser))
+                .thenReturn(Optional.of(gitHubProfile));
+
+        when(userDb.hasUser(gitHubUser)).thenReturn(false);
+
+        User mockUser = User.builder().name(gitHubUser).avatar(avatarUrl).build();
+        when(userDb.addUser(mockUser))
+                .thenReturn(mockUser);
 
         // WHEN
-        User actual = userService.addUser("mr-foobar");
+        User actual = userService.addUser(gitHubUser);
 
         // THEN
-        assertThat(actual, is(User.builder().name("mr-foobar").avatar("mr-foobars-avatar").build()));
-        verify(userDb).addUser(User.builder().name("mr-foobar").avatar("mr-foobars-avatar").build());
+        User expectedUser = User.builder().name(gitHubUser).avatar(avatarUrl).build();
+        assertThat(actual, is(expectedUser));
+        verify(userDb).addUser(expectedUser);
     }
 
     @Test
+    @DisplayName("A new user whose name is not a github login is not added")
     public void testAddANonGithubUser(){
         // GIVEN
-        GitHubApiService gitHubApiService = mock(GitHubApiService.class);
-        UserDb userDb = mock(UserDb.class);
-        when(gitHubApiService.getUserprofile("mr-foobar"))
+        String gitHubUser = "mr-foobar";
+
+        when(gitHubApiService.getUserprofile(gitHubUser))
                 .thenReturn(Optional.empty());
 
-        UserService userService = new UserService(gitHubApiService, userDb);
-
         // WHEN
-        assertThrows(ResponseStatusException.class, () -> userService.addUser("mr-foobar"));
+        assertThrows(ResponseStatusException.class, () -> userService.addUser(gitHubUser));
 
         // THEN
         verify(userDb, never()).addUser(any());
@@ -60,21 +68,22 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("An already added user is not added again")
     public void testAddExistingUser(){
         // GIVEN
-        GitHubApiService gitHubApiService = mock(GitHubApiService.class);
-        UserDb userDb = mock(UserDb.class);
-        when(gitHubApiService.getUserprofile("mr-foobar"))
-                .thenReturn(Optional.of(
-                        GitHubProfile.builder()
-                                .login("mr-foobar")
-                                .avatarUrl("mr-foobars-avatar")
-                                .build()));
-        when(userDb.hasUser("mr-foobar")).thenReturn(true);
-        UserService userService = new UserService(gitHubApiService, userDb);
+        String gitHubUser = "mr-foobar";
+        GitHubProfile gitHubProfile = GitHubProfile.builder()
+                .login(gitHubUser)
+                .avatarUrl("mr-foobars-avatar")
+                .build();
+
+        when(gitHubApiService.getUserprofile(gitHubUser))
+                .thenReturn(Optional.of(gitHubProfile));
+
+        when(userDb.hasUser(gitHubUser)).thenReturn(true);
 
         // WHEN
-        assertThrows(ResponseStatusException.class, () -> userService.addUser("mr-foobar"));
+        assertThrows(ResponseStatusException.class, () -> userService.addUser(gitHubUser));
 
         // THEN
         verify(userDb, never()).addUser(any());

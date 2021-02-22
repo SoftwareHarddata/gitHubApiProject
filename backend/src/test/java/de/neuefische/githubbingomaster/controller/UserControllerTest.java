@@ -6,6 +6,7 @@ import de.neuefische.githubbingomaster.model.AddUserDto;
 import de.neuefische.githubbingomaster.model.User;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,30 +48,38 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Adding a new user via its github login adds the user to the database")
     public void addNewUser(){
         // GIVEN
-        AddUserDto userDto = AddUserDto.builder().name("mr-foobar").build();
-        when(restTemplate.getForEntity("https://api.github.com/users/mr-foobar", GitHubProfile.class))
+        String gitHubUser = "mr-foobar";
+        String avatarUrl = "mr-foobars-avatar";
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser;
+        AddUserDto userDto = AddUserDto.builder().name(gitHubUser).build();
+        when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class))
                 .thenReturn(ResponseEntity.ok(
-                        GitHubProfile.builder().login("mr-foobar").avatarUrl("mr-foobars-avatar").build()));
+                        GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
 
         // WHEN
         ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(),userDto, User.class);
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(User.builder().name("mr-foobar").avatar("mr-foobars-avatar").build()));
-        assertTrue(userDb.hasUser("mr-foobar"));
+        assertThat(response.getBody(), is(User.builder().name(gitHubUser).avatar(avatarUrl).build()));
+        assertTrue(userDb.hasUser(gitHubUser));
     }
 
     @Test
+    @DisplayName("Adding a user twice results in 400 (Bad Request)")
     public void addExistingUser(){
         // GIVEN
-        userDb.addUser(User.builder().name("mr-foobar").avatar("mr-foobars-avatar").build());
-        AddUserDto userDto = AddUserDto.builder().name("mr-foobar").build();
-        when(restTemplate.getForEntity("https://api.github.com/users/mr-foobar", GitHubProfile.class))
+        String gitHubUser = "mr-foobar";
+        String avatarUrl = "mr-foobars-avatar";
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser;
+        userDb.addUser(User.builder().name(gitHubUser).avatar(avatarUrl).build());
+        AddUserDto userDto = AddUserDto.builder().name(gitHubUser).build();
+        when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class))
                 .thenReturn(ResponseEntity.ok(
-                        GitHubProfile.builder().login("mr-foobar").avatarUrl("mr-foobars-avatar").build()));
+                        GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
 
         // WHEN
         ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(),userDto, User.class);
@@ -80,10 +89,13 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Adding a user who is not a github user results in 400 (Bad Request)")
     public void addNonGitHubUser(){
         // GIVEN
-        AddUserDto userDto = AddUserDto.builder().name("mr-foobar").build();
-        when(restTemplate.getForEntity("https://api.github.com/users/mr-foobar", GitHubProfile.class))
+        String gitHubUser = "mr-foobar";
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser;
+        AddUserDto userDto = AddUserDto.builder().name(gitHubUser).build();
+        when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class))
                 .thenThrow(RestClientException.class);
 
         // WHEN
