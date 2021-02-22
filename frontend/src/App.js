@@ -1,5 +1,11 @@
+import AddNewUser from './components/AddNewUser'
+
 function App() {
-  return <div>hello world</div>
+  return (
+    <div>
+      <AddNewUser onAdd={(name) => console.log(name)} />
+    </div>
+  )
 }
 
 export default App
