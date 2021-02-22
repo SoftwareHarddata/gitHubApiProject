@@ -40,7 +40,7 @@ class GitHubApiServiceTest {
     }
 
     @Test
-    @DisplayName("Returns aempty optional when the user is not a github user")
+    @DisplayName("Returns an empty optional when the user is not a github user")
     public void getNonExistingUser(){
         // GIVEN
         String gitHubUser = "no-a-user";
