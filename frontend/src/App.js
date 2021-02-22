@@ -1,9 +1,15 @@
 import AddNewUser from './components/AddNewUser'
+import { postUser } from './services/bingoApiService'
 
 function App() {
+  const addNewUser = (name) =>
+    postUser(name)
+      .then((user) => console.log(user))
+      .catch((error) => console.error(error))
+
   return (
     <div>
-      <AddNewUser onAdd={(name) => console.log(name)} />
+      <AddNewUser onAdd={addNewUser} />
     </div>
   )
 }
