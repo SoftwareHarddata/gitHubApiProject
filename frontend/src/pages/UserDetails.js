@@ -28,9 +28,13 @@ export default function UserDetails() {
 }
 
 const UserDetailsContainer = styled.section`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
   img {
-    width: 48px;
-    height: 48px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
   }
 
