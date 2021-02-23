@@ -2,6 +2,7 @@ package de.neuefische.githubbingomaster.service;
 
 import de.neuefische.githubbingomaster.db.UserDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepos;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +26,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("A new user whose name is a github login is added")
-    public void testAddANewUser(){
+    public void testAddANewUser() {
         // GIVEN
         String gitHubUser = "mr-foobar";
         String avatarUrl = "mr-foobars-avatar";
@@ -37,9 +38,12 @@ class UserServiceTest {
         when(gitHubApiService.getUserprofile(gitHubUser))
                 .thenReturn(Optional.of(gitHubProfile));
 
+        when(gitHubApiService.getUserRepos(gitHubUser)).thenReturn(List.of("repo1", "repo2"));
+
         when(userDb.hasUser(gitHubUser)).thenReturn(false);
 
-        User mockUser = User.builder().name(gitHubUser).avatar(avatarUrl).build();
+        User mockUser = User.builder().name(gitHubUser).avatar(avatarUrl)
+                .repositories(List.of("repo1", "repo2")).build();
         when(userDb.addUser(mockUser))
                 .thenReturn(mockUser);
 
@@ -47,14 +51,15 @@ class UserServiceTest {
         User actual = userService.addUser(gitHubUser);
 
         // THEN
-        User expectedUser = User.builder().name(gitHubUser).avatar(avatarUrl).build();
+        User expectedUser = User.builder().name(gitHubUser).avatar(avatarUrl)
+                .repositories(List.of("repo1", "repo2")).build();
         assertThat(actual, is(expectedUser));
         verify(userDb).addUser(expectedUser);
     }
 
     @Test
     @DisplayName("A new user whose name is not a github login is not added")
-    public void testAddANonGithubUser(){
+    public void testAddANonGithubUser() {
         // GIVEN
         String gitHubUser = "mr-foobar";
 
@@ -71,7 +76,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("An already added user is not added again")
-    public void testAddExistingUser(){
+    public void testAddExistingUser() {
         // GIVEN
         String gitHubUser = "mr-foobar";
         GitHubProfile gitHubProfile = GitHubProfile.builder()
@@ -93,37 +98,37 @@ class UserServiceTest {
 
     @Test
     @DisplayName("List users should return list from db")
-    public void listUsers(){
+    public void listUsers() {
         //GIVEN
         when(userDb.list()).thenReturn(List.of(
-                new User("supergithubuser", "someavatar"),
-                new User("secondUser", "someOtheravatar")));
+                new User("supergithubuser", "someavatar", List.of("repo1", "repo2")),
+                new User("secondUser", "someOtheravatar", List.of("repo1", "repo2"))));
         //WHEN
         List<User> users = userService.listUsers();
 
         //THEN
         assertThat(users, containsInAnyOrder(
-                new User("supergithubuser", "someavatar"),
-                new User("secondUser", "someOtheravatar")));
+                new User("supergithubuser", "someavatar", List.of("repo1", "repo2")),
+                new User("secondUser", "someOtheravatar", List.of("repo1", "repo2"))));
     }
 
     @Test
     @DisplayName("getUserByUsername should return existing user from Db")
-    public void getExistingUser(){
+    public void getExistingUser() {
         //GIVEN
         String username = "existingUserName";
-        when(userDb.findByUsername(username)).thenReturn(Optional.of(new User(username, "someavatar")));
+        when(userDb.findByUsername(username)).thenReturn(Optional.of(new User(username, "someavatar", List.of("repo1", "repo2"))));
 
         //WHEN
         Optional<User> userByUsername = userService.getUserByUsername(username);
 
         //THEN
-        assertThat(userByUsername.get(), is(new User(username, "someavatar")));
+        assertThat(userByUsername.get(), is(new User(username, "someavatar", List.of("repo1", "repo2"))));
     }
 
     @Test
     @DisplayName("getUserByUsername should return empty user from Db")
-    public void getNotExistingUser(){
+    public void getNotExistingUser() {
         //GIVEN
         String username = "notExistingUserName";
         when(userDb.findByUsername(username)).thenReturn(Optional.empty());

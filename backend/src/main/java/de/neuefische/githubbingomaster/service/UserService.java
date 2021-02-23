@@ -2,6 +2,7 @@ package de.neuefische.githubbingomaster.service;
 
 import de.neuefische.githubbingomaster.db.UserDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepos;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +27,18 @@ public class UserService {
 
     public User addUser(String name) {
         Optional<GitHubProfile> optionalProfile = gitHubApiService.getUserprofile(name);
-        if(optionalProfile.isEmpty()){
+        if (optionalProfile.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User " + name + " is not a GitHub user");
         }
-        if(userDb.hasUser(name)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User " +  name + " is already in the database");
+        if (userDb.hasUser(name)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User " + name + " is already in the database");
         }
         GitHubProfile profile = optionalProfile.get();
-        User user = User.builder().name(profile.getLogin()).avatar(profile.getAvatarUrl()).build();
+
+        List<String> gitHubRepos = gitHubApiService.getUserRepos(name);
+
+        User user = User.builder().name(profile.getLogin()).avatar(profile.getAvatarUrl())
+                .repositories(gitHubRepos).build();
         return userDb.addUser(user);
     }
 
@@ -44,4 +49,6 @@ public class UserService {
     public Optional<User> getUserByUsername(String username) {
         return userDb.findByUsername(username);
     }
+
+
 }

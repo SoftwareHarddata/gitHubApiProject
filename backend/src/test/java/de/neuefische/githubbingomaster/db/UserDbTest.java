@@ -20,39 +20,39 @@ class UserDbTest {
     @DisplayName("Add should insert users into list")
     public void addUser() {
         //GIVEN
-        User user = new User("supergithubuser", "someavatar");
+        User user = new User("supergithubuser", "someavatar", List.of("repo1", "repo2"));
 
         //WHEN
         User userResponse = userDb.addUser(user);
         List<User> users = userDb.list();
 
         //THEN
-        assertThat(userResponse, is(new User("supergithubuser", "someavatar")));
-        assertThat(users, contains(new User("supergithubuser", "someavatar")));
+        assertThat(userResponse, is(new User("supergithubuser", "someavatar", List.of("repo1", "repo2"))));
+        assertThat(users, contains(new User("supergithubuser", "someavatar", List.of("repo1", "repo2"))));
     }
 
     @Test
     @DisplayName("findByUsername should return user with matching username")
-    public void findByUsername(){
+    public void findByUsername() {
         //GIVEN
-        userDb.addUser(new User("supergithubuser", "someavatar1"));
-        userDb.addUser(new User("otherUsername", "someavatar2"));
+        userDb.addUser(new User("supergithubuser", "someavatar1", List.of("repo1", "repo2")));
+        userDb.addUser(new User("otherUsername", "someavatar2", List.of("repo1", "repo2")));
 
         //WHEN
         Optional<User> userResponse = userDb.findByUsername("otherUsername");
 
         //THEN
-        assertThat(userResponse.get(), is(new User("otherUsername", "someavatar2")));
+        assertThat(userResponse.get(), is(new User("otherUsername", "someavatar2", List.of("repo1", "repo2"))));
 
     }
 
 
     @Test
     @DisplayName("findByUsername should return empty optional when username not found")
-    public void findByUsernameNotFound(){
+    public void findByUsernameNotFound() {
         //GIVEN
-        userDb.addUser(new User("supergithubuser", "someavatar1"));
-        userDb.addUser(new User("otherUsername", "someavatar2"));
+        userDb.addUser(new User("supergithubuser", "someavatar1", List.of("repo1", "repo2")));
+        userDb.addUser(new User("otherUsername", "someavatar2", List.of("repo1", "repo2")));
 
         //WHEN
         Optional<User> userResponse = userDb.findByUsername("unknownUsername");
