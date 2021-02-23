@@ -1,15 +1,38 @@
+import { useEffect, useState } from 'react'
 import AddNewUser from './components/AddNewUser'
-import { postUser } from './services/bingoApiService'
+import UserList from './components/UserList'
+import { Switch, Route } from 'react-router-dom'
+import { getUsers, postUser } from './services/bingoApiService'
+import UserDetails from './pages/UserDetails'
 
 function App() {
+  const [users, setUsers] = useState([])
+
+  useEffect(() => {
+    getUsers()
+      .then(setUsers)
+      .catch((error) => console.error(error))
+  }, [])
+
   const addNewUser = (name) =>
     postUser(name)
-      .then((user) => console.log(user))
+      .then((newUser) => {
+        const updatedUsers = [...users, newUser]
+        setUsers(updatedUsers)
+      })
       .catch((error) => console.error(error))
 
   return (
     <div>
-      <AddNewUser onAdd={addNewUser} />
+      <Switch>
+        <Route exact path="/">
+          <AddNewUser onAdd={addNewUser} />
+          <UserList users={users} />
+        </Route>
+        <Route path="/user/:username">
+          <UserDetails />
+        </Route>
+      </Switch>
     </div>
   )
 }
