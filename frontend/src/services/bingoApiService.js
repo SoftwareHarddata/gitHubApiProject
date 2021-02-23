@@ -7,3 +7,6 @@ export const postUser = (name) =>
 
 export const getUsers = () =>
   axios.get(baseUrl).then((response) => response.data)
+
+export const getUser = (username) =>
+  axios.get(`${baseUrl}/${username}`).then((response) => response.data)

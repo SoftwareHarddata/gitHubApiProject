@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import AddNewUser from './components/AddNewUser'
 import UserList from './components/UserList'
+import { Switch, Route } from 'react-router-dom'
 import { getUsers, postUser } from './services/bingoApiService'
+import UserDetails from './pages/UserDetails'
 
 function App() {
   const [users, setUsers] = useState([])
@@ -22,8 +24,15 @@ function App() {
 
   return (
     <div>
-      <AddNewUser onAdd={addNewUser} />
-      <UserList users={users} />
+      <Switch>
+        <Route exact path="/">
+          <AddNewUser onAdd={addNewUser} />
+          <UserList users={users} />
+        </Route>
+        <Route path="/user/:username">
+          <UserDetails />
+        </Route>
+      </Switch>
     </div>
   )
 }
