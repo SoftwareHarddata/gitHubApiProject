@@ -1,15 +1,18 @@
-import AddNewUser from './components/AddNewUser'
-import { postUser } from './services/bingoApiService'
+import { Switch, Route } from 'react-router-dom'
+import UserDetails from './pages/UserDetails'
+import UserOverview from './pages/UserOverview'
 
 function App() {
-  const addNewUser = (name) =>
-    postUser(name)
-      .then((user) => console.log(user))
-      .catch((error) => console.error(error))
-
   return (
     <div>
-      <AddNewUser onAdd={addNewUser} />
+      <Switch>
+        <Route exact path="/">
+          <UserOverview />
+        </Route>
+        <Route path="/user/:username">
+          <UserDetails />
+        </Route>
+      </Switch>
     </div>
   )
 }
