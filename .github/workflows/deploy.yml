@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      # for testing
-      - task/add-deployment
 
 jobs:
   build-frontend:
