@@ -39,6 +39,9 @@ jobs:
         with:
           name: frontend-build
           path: backend/src/main/java/resources/static
+      - run: |
+         cd backend/src/main/java/resources/static
+         ls -R
       - name: Build with Maven
         run: mvn -B package --file backend/pom.xml
       - name: upload backend
