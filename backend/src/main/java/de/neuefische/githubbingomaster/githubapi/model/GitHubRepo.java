@@ -13,8 +13,10 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GitHubRepos {
+public class GitHubRepo {
 
     @JsonProperty("name")
     private String repository;
+    @JsonProperty("html_url")
+    private String repositoryUrl;
 }

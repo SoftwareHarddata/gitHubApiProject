@@ -2,8 +2,7 @@ package de.neuefische.githubbingomaster.githubapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
-import de.neuefische.githubbingomaster.githubapi.model.GitHubRepos;
-import lombok.extern.log4j.Log4j;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -41,14 +40,16 @@ public class GitHubApiService {
         }
     }
 
-    public List<String> getUserRepos(String name) {
+    public GitHubRepo[] getUserRepos(String name) {
         String url = baseUrl + "/" + name + "/repos";
-        ResponseEntity<GitHubRepos[]> response = restTemplate.getForEntity(url, GitHubRepos[].class);
-        ObjectMapper mapper = new ObjectMapper();
-        return Arrays.stream(response.getBody())
-                .map(object -> mapper.convertValue(object, GitHubRepos.class))
-                .map(GitHubRepos::getRepository)
-                .collect(Collectors.toList());
+
+        try {
+            ResponseEntity<GitHubRepo[]> response = restTemplate.getForEntity(url, GitHubRepo[].class);
+            return response.getBody();
+        } catch (RestClientException e) {
+            log.warn(e.getMessage());
+            return new GitHubRepo[]{};
+        }
     }
 
 }

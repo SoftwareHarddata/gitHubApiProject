@@ -2,7 +2,7 @@ package de.neuefische.githubbingomaster.service;
 
 import de.neuefische.githubbingomaster.db.UserDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
-import de.neuefische.githubbingomaster.githubapi.model.GitHubRepos;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
 import org.junit.jupiter.api.DisplayName;
@@ -38,12 +38,12 @@ class UserServiceTest {
         when(gitHubApiService.getUserprofile(gitHubUser))
                 .thenReturn(Optional.of(gitHubProfile));
 
-        when(gitHubApiService.getUserRepos(gitHubUser)).thenReturn(List.of("repo1", "repo2"));
+        when(gitHubApiService.getUserRepos(gitHubUser))
+                .thenReturn(new GitHubRepo[]{new GitHubRepo("some-name", "repo-url-1")});
 
         when(userDb.hasUser(gitHubUser)).thenReturn(false);
 
-        User mockUser = User.builder().name(gitHubUser).avatar(avatarUrl)
-                .repositories(List.of("repo1", "repo2")).build();
+        User mockUser = User.builder().name(gitHubUser).avatar(avatarUrl).build();
         when(userDb.addUser(mockUser))
                 .thenReturn(mockUser);
 
@@ -51,8 +51,7 @@ class UserServiceTest {
         User actual = userService.addUser(gitHubUser);
 
         // THEN
-        User expectedUser = User.builder().name(gitHubUser).avatar(avatarUrl)
-                .repositories(List.of("repo1", "repo2")).build();
+        User expectedUser = User.builder().name(gitHubUser).avatar(avatarUrl).build();
         assertThat(actual, is(expectedUser));
         verify(userDb).addUser(expectedUser);
     }
@@ -101,15 +100,15 @@ class UserServiceTest {
     public void listUsers() {
         //GIVEN
         when(userDb.list()).thenReturn(List.of(
-                new User("supergithubuser", "someavatar", List.of("repo1", "repo2")),
-                new User("secondUser", "someOtheravatar", List.of("repo1", "repo2"))));
+                new User("supergithubuser", "someavatar"),
+                new User("secondUser", "someOtheravatar")));
         //WHEN
         List<User> users = userService.listUsers();
 
         //THEN
         assertThat(users, containsInAnyOrder(
-                new User("supergithubuser", "someavatar", List.of("repo1", "repo2")),
-                new User("secondUser", "someOtheravatar", List.of("repo1", "repo2"))));
+                new User("supergithubuser", "someavatar"),
+                new User("secondUser", "someOtheravatar")));
     }
 
     @Test
@@ -117,13 +116,13 @@ class UserServiceTest {
     public void getExistingUser() {
         //GIVEN
         String username = "existingUserName";
-        when(userDb.findByUsername(username)).thenReturn(Optional.of(new User(username, "someavatar", List.of("repo1", "repo2"))));
+        when(userDb.findByUsername(username)).thenReturn(Optional.of(new User(username, "someavatar")));
 
         //WHEN
         Optional<User> userByUsername = userService.getUserByUsername(username);
 
         //THEN
-        assertThat(userByUsername.get(), is(new User(username, "someavatar", List.of("repo1", "repo2"))));
+        assertThat(userByUsername.get(), is(new User(username, "someavatar")));
     }
 
     @Test
@@ -140,4 +139,43 @@ class UserServiceTest {
         assertThat(userByUsername.isEmpty(), is(true));
     }
 
+    @Test
+    @DisplayName("Get repositories should return list of github repositories")
+    public void getRepositoriesReturnRepositories() {
+        //Given
+        String username = "mr-foobar";
+        when(gitHubApiService.getUserRepos(username)).thenReturn(new GitHubRepo[]{
+                new GitHubRepo("repository1", "some-url-1"),
+                new GitHubRepo("repository2", "some-url-2")
+        });
+        when(userDb.hasUser(username)).thenReturn(true);
+
+        // When
+        List<GitHubRepo> repositories = userService.getRepositories(username);
+
+        // Then
+        assertThat(repositories, is(List.of(
+                new GitHubRepo("repository1", "some-url-1"),
+                new GitHubRepo("repository2", "some-url-2")
+        )));
+        verify(userDb).hasUser(username);
+
+    }
+
+    @Test
+    @DisplayName("Get repositories should return empty list for non existing user")
+    public void getRepositoriesReturnsEmptyList() {
+        //Given
+        String username = "mr-foobar";
+        when(gitHubApiService.getUserRepos(username)).thenReturn(new GitHubRepo[]{});
+        when(userDb.hasUser(username)).thenReturn(false);
+
+        // When
+        assertThrows(ResponseStatusException.class, () ->
+                userService.getRepositories(username));
+
+        // Then
+        verify(userDb).hasUser(username);
+
+    }
 }

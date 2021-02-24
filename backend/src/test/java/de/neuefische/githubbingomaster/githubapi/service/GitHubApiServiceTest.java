@@ -1,7 +1,7 @@
 package de.neuefische.githubbingomaster.githubapi.service;
 
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
-import de.neuefische.githubbingomaster.githubapi.model.GitHubRepos;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -64,19 +64,39 @@ class GitHubApiServiceTest {
         // GIVEN
         String gitHubUser = "super-user";
         String gitHubUrl = "https://api.github.com/users/" + gitHubUser + "/repos";
-        GitHubRepos[] mockedRepos = {
-                new GitHubRepos("repo1"),
-                new GitHubRepos("repo2")
+        GitHubRepo[] mockedRepos = {
+                new GitHubRepo("repo1", "some-url-1"),
+                new GitHubRepo("repo2", "some-url-2")
 
         };
-        
-        when(restTemplate.getForEntity(gitHubUrl, GitHubRepos[].class)).thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
+
+        when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class)).thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
 
         // WHEN
-        List<String> actual = gitHubApiService.getUserRepos(gitHubUser);
+        GitHubRepo[] actual = gitHubApiService.getUserRepos(gitHubUser);
 
         // THEN
-        assertThat(actual, is(List.of("repo1", "repo2")));
+        assertThat(actual, is(new GitHubRepo[]{
+                new GitHubRepo("repo1", "some-url-1"),
+                new GitHubRepo("repo2", "some-url-2")
+        }));
+    }
+
+    @Test
+    @DisplayName("Returns an empty array when user does not exist")
+    public void getReposFromNonExistingUser() {
+        // GIVEN
+        String gitHubUser = "not-a-user";
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser + "/repos";
+        when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class))
+                .thenThrow(RestClientException.class);
+
+        // WHEN
+        GitHubRepo[] actual = gitHubApiService.getUserRepos(gitHubUser);
+
+        // THEN
+        assertThat(actual, is(new GitHubRepo[]{}));
+
     }
 
 }

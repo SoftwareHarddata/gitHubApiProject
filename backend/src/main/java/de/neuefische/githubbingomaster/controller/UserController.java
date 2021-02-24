@@ -1,6 +1,6 @@
 package de.neuefische.githubbingomaster.controller;
 
-import de.neuefische.githubbingomaster.githubapi.model.GitHubRepos;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.model.AddUserDto;
 import de.neuefische.githubbingomaster.model.User;
 import de.neuefische.githubbingomaster.service.UserService;
@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -37,6 +38,10 @@ public class UserController {
         return userService.getUserByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
     }
-    
+
+    @GetMapping("{username}/repos")
+    public List<GitHubRepo> getRepositories(@PathVariable String username) {
+        return userService.getRepositories(username);
+    }
 
 }

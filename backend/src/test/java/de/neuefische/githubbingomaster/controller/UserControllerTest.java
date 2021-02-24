@@ -2,10 +2,9 @@ package de.neuefische.githubbingomaster.controller;
 
 import de.neuefische.githubbingomaster.db.UserDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
-import de.neuefische.githubbingomaster.githubapi.model.GitHubRepos;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.model.AddUserDto;
 import de.neuefische.githubbingomaster.model.User;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
@@ -63,23 +61,12 @@ class UserControllerTest {
                 .thenReturn(ResponseEntity.ok(
                         GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
 
-        GitHubRepos[] mockedRepos = {
-                new GitHubRepos("repo1"),
-                new GitHubRepos("repo2")
-
-        };
-
-        when(restTemplate.getForEntity(gitHubUrl + "/repos", GitHubRepos[].class))
-                .thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
-
-
         // WHEN
         ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), userDto, User.class);
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(User.builder().name(gitHubUser).avatar(avatarUrl)
-                .repositories(List.of("repo1", "repo2")).build()));
+        assertThat(response.getBody(), is(User.builder().name(gitHubUser).avatar(avatarUrl).build()));
         assertTrue(userDb.hasUser(gitHubUser));
     }
 
@@ -90,8 +77,7 @@ class UserControllerTest {
         String gitHubUser = "mr-foobar";
         String avatarUrl = "mr-foobars-avatar";
         String gitHubUrl = "https://api.github.com/users/" + gitHubUser;
-        userDb.addUser(User.builder().name(gitHubUser).avatar(avatarUrl)
-                .repositories(List.of("repo1", "repo2")).build());
+        userDb.addUser(User.builder().name(gitHubUser).avatar(avatarUrl).build());
         AddUserDto userDto = AddUserDto.builder().name(gitHubUser).build();
         when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class))
                 .thenReturn(ResponseEntity.ok(
@@ -125,8 +111,8 @@ class UserControllerTest {
     @DisplayName("Get user should return a list of all users")
     public void getAllUsers() {
         //GIVEN
-        userDb.addUser(new User("supergithubuser", "someavatar", List.of("repo1", "repo2")));
-        userDb.addUser(new User("secondUser", "someOtheravatar", List.of("repo1", "repo2")));
+        userDb.addUser(new User("supergithubuser", "someavatar"));
+        userDb.addUser(new User("secondUser", "someOtheravatar"));
 
         //WHEN
         ResponseEntity<User[]> response = testRestTemplate.getForEntity(getUrl(), User[].class);
@@ -134,34 +120,61 @@ class UserControllerTest {
         //THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), arrayContainingInAnyOrder(
-                new User("supergithubuser", "someavatar", List.of("repo1", "repo2")),
-                new User("secondUser", "someOtheravatar", List.of("repo1", "repo2"))));
+                new User("supergithubuser", "someavatar"),
+                new User("secondUser", "someOtheravatar")));
     }
 
     @Test
     @DisplayName("Get user by username should return user")
     public void getUser() {
         //GIVEN
-        userDb.addUser(new User("supergithubuser", "someavatar", List.of("repo1", "repo2")));
-        userDb.addUser(new User("secondUser", "someOtheravatar", List.of("repo1", "repo2")));
+        userDb.addUser(new User("supergithubuser", "someavatar"));
+        userDb.addUser(new User("secondUser", "someOtheravatar"));
         //WHEN
         ResponseEntity<User> response = testRestTemplate.getForEntity(getUrl() + "/secondUser", User.class);
 
         //THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(new User("secondUser", "someOtheravatar", List.of("repo1", "repo2"))));
+        assertThat(response.getBody(), is(new User("secondUser", "someOtheravatar")));
     }
 
     @Test
     @DisplayName("Get user by username should return not found 404 when user not exists")
     public void getUserNotFound() {
         //GIVEN
-        userDb.addUser(new User("supergithubuser", "someavatar", List.of("repo1", "repo2")));
-        userDb.addUser(new User("secondUser", "someOtheravatar", List.of("repo1", "repo2")));
+        userDb.addUser(new User("supergithubuser", "someavatar"));
+        userDb.addUser(new User("secondUser", "someOtheravatar"));
         //WHEN
         ResponseEntity<Void> response = testRestTemplate.getForEntity(getUrl() + "/unknownUser", Void.class);
 
         //THEN
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    @DisplayName("Get repositories returns repositories")
+    public void getRepositoriesReturnsRepositories() {
+        //Given
+        String gitHubUrl = "https://api.github.com/users/supergithubuser/repos";
+        GitHubRepo[] mockedRepos = {
+                new GitHubRepo("repo1", "some-url-1"),
+                new GitHubRepo("repo2", "some-url-2")
+
+        };
+        userDb.addUser(new User("supergithubuser", "someavatar"));
+
+
+        when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class))
+                .thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
+
+        // When
+        ResponseEntity<GitHubRepo[]> response = testRestTemplate.getForEntity(getUrl() + "/supergithubuser/repos", GitHubRepo[].class);
+
+        // Then
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(new GitHubRepo[]{
+                new GitHubRepo("repo1", "some-url-1"),
+                new GitHubRepo("repo2", "some-url-2")
+        }));
     }
 }

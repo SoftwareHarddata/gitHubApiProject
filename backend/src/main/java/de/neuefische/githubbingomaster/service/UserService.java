@@ -2,7 +2,7 @@ package de.neuefische.githubbingomaster.service;
 
 import de.neuefische.githubbingomaster.db.UserDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
-import de.neuefische.githubbingomaster.githubapi.model.GitHubRepos;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +35,7 @@ public class UserService {
         }
         GitHubProfile profile = optionalProfile.get();
 
-        List<String> gitHubRepos = gitHubApiService.getUserRepos(name);
-
-        User user = User.builder().name(profile.getLogin()).avatar(profile.getAvatarUrl())
-                .repositories(gitHubRepos).build();
+        User user = User.builder().name(profile.getLogin()).avatar(profile.getAvatarUrl()).build();
         return userDb.addUser(user);
     }
 
@@ -50,5 +47,11 @@ public class UserService {
         return userDb.findByUsername(username);
     }
 
+    public List<GitHubRepo> getRepositories(String name) {
+        if (userDb.hasUser(name)) {
+            return List.of(gitHubApiService.getUserRepos(name));
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, name + " does not exist in database");
+    }
 
 }

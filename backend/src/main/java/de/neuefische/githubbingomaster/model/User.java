@@ -16,6 +16,5 @@ public class User {
 
     private String name;
     private String avatar;
-    private List<String> repositories;
 
 }
