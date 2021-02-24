@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      # for testing
       - task/add-deployment
 
 jobs:
@@ -14,7 +15,13 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: |
+      - name: build frontend
+        run: |
           cd frontend
           npm ci
           npm run build
+      - name: upload frontend
+        uses: actions/upload-artifact@v2
+        with:
+          name: frontend-build
+          path: frontend/build/
