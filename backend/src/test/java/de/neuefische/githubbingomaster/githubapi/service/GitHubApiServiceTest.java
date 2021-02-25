@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,13 +74,13 @@ class GitHubApiServiceTest {
         when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class)).thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
 
         // WHEN
-        GitHubRepo[] actual = gitHubApiService.getUserRepos(gitHubUser);
+        List<GitHubRepo> actual = gitHubApiService.getUserRepos(gitHubUser);
 
         // THEN
-        assertThat(actual, is(new GitHubRepo[]{
+        assertThat(actual, is(List.of(
                 new GitHubRepo("repo1", "some-url-1"),
                 new GitHubRepo("repo2", "some-url-2")
-        }));
+        )));
     }
 
     @Test
@@ -92,10 +93,10 @@ class GitHubApiServiceTest {
                 .thenThrow(RestClientException.class);
 
         // WHEN
-        GitHubRepo[] actual = gitHubApiService.getUserRepos(gitHubUser);
+        List<GitHubRepo> actual = gitHubApiService.getUserRepos(gitHubUser);
 
         // THEN
-        assertThat(actual, is(new GitHubRepo[]{}));
+        assertThat(actual, is(new ArrayList<>()));
 
     }
 

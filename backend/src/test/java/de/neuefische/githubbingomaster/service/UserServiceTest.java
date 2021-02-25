@@ -5,10 +5,12 @@ import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
+import de.neuefische.githubbingomaster.model.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class UserServiceTest {
@@ -39,7 +42,7 @@ class UserServiceTest {
                 .thenReturn(Optional.of(gitHubProfile));
 
         when(gitHubApiService.getUserRepos(gitHubUser))
-                .thenReturn(new GitHubRepo[]{new GitHubRepo("some-name", "repo-url-1")});
+                .thenReturn(List.of(new GitHubRepo("some-name", "repo-url-1")));
 
         when(userDb.hasUser(gitHubUser)).thenReturn(false);
 
@@ -144,19 +147,19 @@ class UserServiceTest {
     public void getRepositoriesReturnRepositories() {
         //Given
         String username = "mr-foobar";
-        when(gitHubApiService.getUserRepos(username)).thenReturn(new GitHubRepo[]{
+        when(gitHubApiService.getUserRepos(username)).thenReturn(List.of(
                 new GitHubRepo("repository1", "some-url-1"),
                 new GitHubRepo("repository2", "some-url-2")
-        });
+        ));
         when(userDb.hasUser(username)).thenReturn(true);
 
         // When
-        List<GitHubRepo> repositories = userService.getRepositories(username);
+        Optional<List<UserRepository>> repositories = userService.getRepositories(username);
 
         // Then
-        assertThat(repositories, is(List.of(
-                new GitHubRepo("repository1", "some-url-1"),
-                new GitHubRepo("repository2", "some-url-2")
+        assertThat(repositories.get(), is(List.of(
+                new UserRepository("repository1", "some-url-1"),
+                new UserRepository("repository2", "some-url-2")
         )));
         verify(userDb).hasUser(username);
 
@@ -167,14 +170,14 @@ class UserServiceTest {
     public void getRepositoriesReturnsEmptyList() {
         //Given
         String username = "mr-foobar";
-        when(gitHubApiService.getUserRepos(username)).thenReturn(new GitHubRepo[]{});
+        when(gitHubApiService.getUserRepos(username)).thenReturn(new ArrayList<>());
         when(userDb.hasUser(username)).thenReturn(false);
 
         // When
-        assertThrows(ResponseStatusException.class, () ->
-                userService.getRepositories(username));
+        Optional<List<UserRepository>> repositories = userService.getRepositories(username);
 
         // Then
+        assertTrue(repositories.isEmpty());
         verify(userDb).hasUser(username);
 
     }

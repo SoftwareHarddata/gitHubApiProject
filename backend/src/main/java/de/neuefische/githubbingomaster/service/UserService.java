@@ -5,6 +5,7 @@ import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
+import de.neuefische.githubbingomaster.model.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -47,11 +49,13 @@ public class UserService {
         return userDb.findByUsername(username);
     }
 
-    public List<GitHubRepo> getRepositories(String name) {
+    public Optional<List<UserRepository>> getRepositories(String name) {
         if (userDb.hasUser(name)) {
-            return List.of(gitHubApiService.getUserRepos(name));
+            return Optional.of(gitHubApiService.getUserRepos(name).stream()
+                    .map(githubRepo -> new UserRepository().builder().repositoryName(githubRepo.getRepository()).repositoryWebUrl(githubRepo.getRepositoryUrl()).build())
+                    .collect(Collectors.toList()));
         }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, name + " does not exist in database");
+        return Optional.empty();
     }
 
 }

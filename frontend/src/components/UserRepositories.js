@@ -5,7 +5,7 @@ export default function UserRepositories({userRepositories}) {
     return (
         <List>
             {userRepositories.map((repository) => (
-                <li><a target="_blank" href={repository.html_url}>{repository.name}</a></li>
+                <li><a target="_blank" href={repository.repositoryWebUrl}>{repository.repositoryName}</a></li>
             ))}
         </List>
     )

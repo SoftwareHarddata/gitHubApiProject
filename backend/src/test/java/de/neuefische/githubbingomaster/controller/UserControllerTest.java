@@ -5,6 +5,7 @@ import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.model.AddUserDto;
 import de.neuefische.githubbingomaster.model.User;
+import de.neuefische.githubbingomaster.model.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
@@ -168,13 +168,23 @@ class UserControllerTest {
                 .thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
 
         // When
-        ResponseEntity<GitHubRepo[]> response = testRestTemplate.getForEntity(getUrl() + "/supergithubuser/repos", GitHubRepo[].class);
+        ResponseEntity<UserRepository[]> response = testRestTemplate.getForEntity(getUrl() + "/supergithubuser/repos", UserRepository[].class);
 
         // Then
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(new GitHubRepo[]{
-                new GitHubRepo("repo1", "some-url-1"),
-                new GitHubRepo("repo2", "some-url-2")
+        assertThat(response.getBody(), is(new UserRepository[]{
+                new UserRepository("repo1", "some-url-1"),
+                new UserRepository("repo2", "some-url-2")
         }));
+    }
+
+    @Test
+    @DisplayName("Get repositories should throw error for non existing user")
+    public void getRepositoriesShouldThrowExceptionForNonExistingUser() {
+        // When
+        ResponseEntity<Void> response = testRestTemplate.getForEntity(getUrl() + "/supergithubuser/repos", Void.class);
+
+        // Then
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 }

@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class User {
+public class UserRepository {
 
-    private String name;
-    private String avatar;
-
+    private String repositoryName;
+    private String repositoryWebUrl;
 }

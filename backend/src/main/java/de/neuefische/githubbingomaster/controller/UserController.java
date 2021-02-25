@@ -3,13 +3,13 @@ package de.neuefische.githubbingomaster.controller;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.model.AddUserDto;
 import de.neuefische.githubbingomaster.model.User;
+import de.neuefische.githubbingomaster.model.UserRepository;
 import de.neuefische.githubbingomaster.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -40,8 +40,9 @@ public class UserController {
     }
 
     @GetMapping("{username}/repos")
-    public List<GitHubRepo> getRepositories(@PathVariable String username) {
-        return userService.getRepositories(username);
+    public List<UserRepository> getRepositories(@PathVariable String username) {
+        return userService.getRepositories(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, username + " does not exist in database"));
     }
 
 }

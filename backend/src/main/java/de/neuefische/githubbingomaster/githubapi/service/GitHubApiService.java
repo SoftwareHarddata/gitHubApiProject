@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -40,15 +41,15 @@ public class GitHubApiService {
         }
     }
 
-    public GitHubRepo[] getUserRepos(String name) {
+    public List<GitHubRepo> getUserRepos(String name) {
         String url = baseUrl + "/" + name + "/repos";
 
         try {
             ResponseEntity<GitHubRepo[]> response = restTemplate.getForEntity(url, GitHubRepo[].class);
-            return response.getBody();
+            return List.of(response.getBody());
         } catch (RestClientException e) {
             log.warn(e.getMessage());
-            return new GitHubRepo[]{};
+            return new ArrayList<>();
         }
     }
 
