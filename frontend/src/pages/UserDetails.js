@@ -1,30 +1,35 @@
-import { useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { getUser } from '../services/bingoApiService'
+import {useParams} from 'react-router-dom'
+import {useEffect, useState} from 'react'
+import {getUser, getUserRepositories} from '../services/bingoApiService'
 import styled from 'styled-components/macro'
+import UserRepositories from "../components/UserRepositories";
 
 export default function UserDetails() {
-  const { username } = useParams()
-  const [userData, setUserData] = useState()
+    const {username} = useParams()
+    const [userData, setUserData] = useState()
+    const [userRepositories, setUserRepositories] = useState()
 
-  useEffect(() => {
-    getUser(username).then(setUserData)
-  }, [username])
+    useEffect(() => {
+        getUser(username).then(setUserData)
+        getUserRepositories(username).then(setUserRepositories)
+    }, [username])
 
-  if (!userData) {
+    if (!userData) {
+        return (
+            <section>
+                <p>Loading</p>
+            </section>
+        )
+    }
+
     return (
-      <section>
-        <p>Loading</p>
-      </section>
+        <UserDetailsContainer>
+            <img src={userData.avatar} alt={userData.name}/>
+            <span className="user-name">{userData.name}</span>
+            {userRepositories && <UserRepositories userRepositories={userRepositories}/>}
+            {!userRepositories && <span>Loading repositories</span>}
+        </UserDetailsContainer>
     )
-  }
-
-  return (
-    <UserDetailsContainer>
-      <img src={userData.avatar} alt={userData.name} />
-      <span className="user-name">{userData.name}</span>
-    </UserDetailsContainer>
-  )
 }
 
 const UserDetailsContainer = styled.section`

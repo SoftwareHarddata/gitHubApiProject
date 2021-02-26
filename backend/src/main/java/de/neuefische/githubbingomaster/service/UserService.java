@@ -4,6 +4,7 @@ import de.neuefische.githubbingomaster.db.UserMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
+import de.neuefische.githubbingomaster.model.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -26,14 +28,15 @@ public class UserService {
 
     public User addUser(String name) {
         Optional<GitHubProfile> optionalProfile = gitHubApiService.getUserprofile(name);
-        if(optionalProfile.isEmpty()){
+        if (optionalProfile.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User " + name + " is not a GitHub user");
         }
 
-        if(userDb.existsById(name)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User " +  name + " is already in the database");
+        if (userDb.existsById(name)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User " + name + " is already in the database");
         }
         GitHubProfile profile = optionalProfile.get();
+
         User user = User.builder().name(profile.getLogin()).avatar(profile.getAvatarUrl()).build();
         return userDb.save(user);
     }
@@ -45,4 +48,14 @@ public class UserService {
     public Optional<User> getUserByUsername(String username) {
         return userDb.findById(username);
     }
+
+    public Optional<List<UserRepository>> getRepositories(String name) {
+        if (userDb.existsById(name)) {
+            return Optional.of(gitHubApiService.getUserRepos(name).stream()
+                    .map(githubRepo -> UserRepository.builder().repositoryName(githubRepo.getRepository()).repositoryWebUrl(githubRepo.getRepositoryUrl()).build())
+                    .collect(Collectors.toList()));
+        }
+        return Optional.empty();
+    }
+
 }

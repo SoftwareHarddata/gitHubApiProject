@@ -2,8 +2,10 @@ package de.neuefische.githubbingomaster.controller;
 
 import de.neuefische.githubbingomaster.db.UserMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.model.AddUserDto;
 import de.neuefische.githubbingomaster.model.User;
+import de.neuefische.githubbingomaster.model.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,8 +31,8 @@ class UserControllerTest {
     @LocalServerPort
     private int port;
 
-    private String getUrl(){
-        return "http://localhost:"+port+"api/user";
+    private String getUrl() {
+        return "http://localhost:" + port + "api/user";
     }
 
     @MockBean
@@ -43,13 +45,13 @@ class UserControllerTest {
     private UserMongoDb userDb;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         userDb.deleteAll();
     }
 
     @Test
     @DisplayName("Adding a new user via its github login adds the user to the database")
-    public void addNewUser(){
+    public void addNewUser() {
         // GIVEN
         String gitHubUser = "mr-foobar";
         String avatarUrl = "mr-foobars-avatar";
@@ -60,7 +62,7 @@ class UserControllerTest {
                         GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
 
         // WHEN
-        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(),userDto, User.class);
+        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), userDto, User.class);
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
@@ -70,7 +72,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Adding a user twice results in 400 (Bad Request)")
-    public void addExistingUser(){
+    public void addExistingUser() {
         // GIVEN
         String gitHubUser = "mr-foobar";
         String avatarUrl = "mr-foobars-avatar";
@@ -82,7 +84,7 @@ class UserControllerTest {
                         GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
 
         // WHEN
-        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(),userDto, User.class);
+        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), userDto, User.class);
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
@@ -90,7 +92,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Adding a user who is not a github user results in 400 (Bad Request)")
-    public void addNonGitHubUser(){
+    public void addNonGitHubUser() {
         // GIVEN
         String gitHubUser = "mr-foobar";
         String gitHubUrl = "https://api.github.com/users/" + gitHubUser;
@@ -99,7 +101,7 @@ class UserControllerTest {
                 .thenThrow(RestClientException.class);
 
         // WHEN
-        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(),userDto, User.class);
+        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), userDto, User.class);
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
@@ -124,12 +126,12 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Get user by username should return user")
-    public void getUser(){
+    public void getUser() {
         //GIVEN
         userDb.save(new User("supergithubuser", "someavatar"));
         userDb.save(new User("secondUser", "someOtheravatar"));
         //WHEN
-        ResponseEntity<User> response = testRestTemplate.getForEntity(getUrl()+"/secondUser", User.class);
+        ResponseEntity<User> response = testRestTemplate.getForEntity(getUrl() + "/secondUser", User.class);
 
         //THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
@@ -138,14 +140,51 @@ class UserControllerTest {
 
     @Test
     @DisplayName("Get user by username should return not found 404 when user not exists")
-    public void getUserNotFound(){
+    public void getUserNotFound() {
         //GIVEN
         userDb.save(new User("supergithubuser", "someavatar"));
         userDb.save(new User("secondUser", "someOtheravatar"));
         //WHEN
-        ResponseEntity<Void> response = testRestTemplate.getForEntity(getUrl()+"/unknownUser", Void.class);
+        ResponseEntity<Void> response = testRestTemplate.getForEntity(getUrl() + "/unknownUser", Void.class);
 
         //THEN
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    @DisplayName("Get repositories returns repositories")
+    public void getRepositoriesReturnsRepositories() {
+        //Given
+        String gitHubUrl = "https://api.github.com/users/supergithubuser/repos";
+        GitHubRepo[] mockedRepos = {
+                new GitHubRepo("repo1", "some-url-1"),
+                new GitHubRepo("repo2", "some-url-2")
+
+        };
+        userDb.save(new User("supergithubuser", "someavatar"));
+
+
+        when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class))
+                .thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
+
+        // When
+        ResponseEntity<UserRepository[]> response = testRestTemplate.getForEntity(getUrl() + "/supergithubuser/repos", UserRepository[].class);
+
+        // Then
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(new UserRepository[]{
+                new UserRepository("repo1", "some-url-1"),
+                new UserRepository("repo2", "some-url-2")
+        }));
+    }
+
+    @Test
+    @DisplayName("Get repositories should throw error for non existing user")
+    public void getRepositoriesShouldThrowExceptionForNonExistingUser() {
+        // When
+        ResponseEntity<Void> response = testRestTemplate.getForEntity(getUrl() + "/supergithubuser/repos", Void.class);
+
+        // Then
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
 }
