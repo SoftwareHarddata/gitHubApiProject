@@ -1,12 +1,16 @@
 package de.neuefische.githubbingomaster.githubapi.service;
 
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,11 +27,11 @@ class GitHubApiServiceTest {
 
     @Test
     @DisplayName("Returns profile of a github user")
-    public void getsAGitHubProfile(){
+    public void getsAGitHubProfile() {
         // GIVEN
         String gitHubUser = "super-user";
         String avatarUrl = "https://avatars.githubusercontent.com/u/48794499?v=4";
-        String gitHubUrl = "https://api.github.com/users/"+gitHubUser;
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser;
         GitHubProfile profile = GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build();
         ResponseEntity<GitHubProfile> response = ResponseEntity.ok(profile);
         when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class)).thenReturn(response);
@@ -41,10 +45,10 @@ class GitHubApiServiceTest {
 
     @Test
     @DisplayName("Returns an empty optional when the user is not a github user")
-    public void getNonExistingUser(){
+    public void getNonExistingUser() {
         // GIVEN
         String gitHubUser = "no-a-user";
-        String gitHubUrl = "https://api.github.com/users/"+gitHubUser;
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser;
         when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class))
                 .thenThrow(RestClientException.class);
 
@@ -53,6 +57,47 @@ class GitHubApiServiceTest {
 
         // THEN
         assertTrue(actual.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Returns repos of a github user")
+    public void getsGitHubRepos() {
+        // GIVEN
+        String gitHubUser = "super-user";
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser + "/repos";
+        GitHubRepo[] mockedRepos = {
+                new GitHubRepo("repo1", "some-url-1"),
+                new GitHubRepo("repo2", "some-url-2")
+
+        };
+
+        when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class)).thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
+
+        // WHEN
+        List<GitHubRepo> actual = gitHubApiService.getUserRepos(gitHubUser);
+
+        // THEN
+        assertThat(actual, is(List.of(
+                new GitHubRepo("repo1", "some-url-1"),
+                new GitHubRepo("repo2", "some-url-2")
+        )));
+    }
+
+    @Test
+    @DisplayName("Returns an empty array when user does not exist")
+    public void getReposFromNonExistingUser() {
+        // GIVEN
+        String gitHubUser = "not-a-user";
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser + "/repos";
+        when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class))
+                .thenThrow(RestClientException.class);
+
+        // WHEN
+        List<GitHubRepo> actual = gitHubApiService.getUserRepos(gitHubUser);
+
+        // THEN
+        assertThat(actual, is(new ArrayList<>()));
+
     }
 
 }

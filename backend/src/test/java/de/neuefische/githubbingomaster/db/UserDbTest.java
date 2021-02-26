@@ -33,7 +33,7 @@ class UserDbTest {
 
     @Test
     @DisplayName("findByUsername should return user with matching username")
-    public void findByUsername(){
+    public void findByUsername() {
         //GIVEN
         userDb.addUser(new User("supergithubuser", "someavatar1"));
         userDb.addUser(new User("otherUsername", "someavatar2"));
@@ -49,7 +49,7 @@ class UserDbTest {
 
     @Test
     @DisplayName("findByUsername should return empty optional when username not found")
-    public void findByUsernameNotFound(){
+    public void findByUsernameNotFound() {
         //GIVEN
         userDb.addUser(new User("supergithubuser", "someavatar1"));
         userDb.addUser(new User("otherUsername", "someavatar2"));
