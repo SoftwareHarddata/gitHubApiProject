@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - task/connect-to-mongo-db
 
 jobs:
   build-frontend:
