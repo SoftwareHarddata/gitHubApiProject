@@ -1,6 +1,6 @@
 package de.neuefische.githubbingomaster.service;
 
-import de.neuefische.githubbingomaster.db.UserDb;
+import de.neuefische.githubbingomaster.db.UserMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
 
     private final GitHubApiService gitHubApiService = mock(GitHubApiService.class);
-    private final UserDb userDb = mock(UserDb.class);
+    private final UserMongoDb userDb = mock(UserMongoDb.class);
     private final UserService userService = new UserService(gitHubApiService, userDb);
 
     @Test
@@ -41,13 +41,10 @@ class UserServiceTest {
         when(gitHubApiService.getUserprofile(gitHubUser))
                 .thenReturn(Optional.of(gitHubProfile));
 
-        when(gitHubApiService.getUserRepos(gitHubUser))
-                .thenReturn(List.of(new GitHubRepo("some-name", "repo-url-1")));
-
-        when(userDb.hasUser(gitHubUser)).thenReturn(false);
+        when(userDb.existsById(gitHubUser)).thenReturn(false);
 
         User mockUser = User.builder().name(gitHubUser).avatar(avatarUrl).build();
-        when(userDb.addUser(mockUser))
+        when(userDb.save(mockUser))
                 .thenReturn(mockUser);
 
         // WHEN
@@ -56,7 +53,7 @@ class UserServiceTest {
         // THEN
         User expectedUser = User.builder().name(gitHubUser).avatar(avatarUrl).build();
         assertThat(actual, is(expectedUser));
-        verify(userDb).addUser(expectedUser);
+        verify(userDb).save(expectedUser);
     }
 
     @Test
@@ -72,8 +69,8 @@ class UserServiceTest {
         assertThrows(ResponseStatusException.class, () -> userService.addUser(gitHubUser));
 
         // THEN
-        verify(userDb, never()).addUser(any());
-        verify(userDb, never()).hasUser(any());
+        verify(userDb, never()).save(any());
+        verify(userDb, never()).existsById(any());
     }
 
     @Test
@@ -89,20 +86,20 @@ class UserServiceTest {
         when(gitHubApiService.getUserprofile(gitHubUser))
                 .thenReturn(Optional.of(gitHubProfile));
 
-        when(userDb.hasUser(gitHubUser)).thenReturn(true);
+        when(userDb.existsById(gitHubUser)).thenReturn(true);
 
         // WHEN
         assertThrows(ResponseStatusException.class, () -> userService.addUser(gitHubUser));
 
         // THEN
-        verify(userDb, never()).addUser(any());
+        verify(userDb, never()).save(any());
     }
 
     @Test
     @DisplayName("List users should return list from db")
     public void listUsers() {
         //GIVEN
-        when(userDb.list()).thenReturn(List.of(
+        when(userDb.findAll()).thenReturn(List.of(
                 new User("supergithubuser", "someavatar"),
                 new User("secondUser", "someOtheravatar")));
         //WHEN
@@ -119,7 +116,7 @@ class UserServiceTest {
     public void getExistingUser() {
         //GIVEN
         String username = "existingUserName";
-        when(userDb.findByUsername(username)).thenReturn(Optional.of(new User(username, "someavatar")));
+        when(userDb.findById(username)).thenReturn(Optional.of(new User(username, "someavatar")));
 
         //WHEN
         Optional<User> userByUsername = userService.getUserByUsername(username);
@@ -133,7 +130,7 @@ class UserServiceTest {
     public void getNotExistingUser() {
         //GIVEN
         String username = "notExistingUserName";
-        when(userDb.findByUsername(username)).thenReturn(Optional.empty());
+        when(userDb.findById(username)).thenReturn(Optional.empty());
 
         //WHEN
         Optional<User> userByUsername = userService.getUserByUsername(username);
@@ -151,7 +148,7 @@ class UserServiceTest {
                 new GitHubRepo("repository1", "some-url-1"),
                 new GitHubRepo("repository2", "some-url-2")
         ));
-        when(userDb.hasUser(username)).thenReturn(true);
+        when(userDb.existsById(username)).thenReturn(true);
 
         // When
         Optional<List<UserRepository>> repositories = userService.getRepositories(username);
@@ -161,7 +158,7 @@ class UserServiceTest {
                 new UserRepository("repository1", "some-url-1"),
                 new UserRepository("repository2", "some-url-2")
         )));
-        verify(userDb).hasUser(username);
+        verify(userDb).existsById(username);
 
     }
 
@@ -171,14 +168,14 @@ class UserServiceTest {
         //Given
         String username = "mr-foobar";
         when(gitHubApiService.getUserRepos(username)).thenReturn(new ArrayList<>());
-        when(userDb.hasUser(username)).thenReturn(false);
+        when(userDb.existsById(username)).thenReturn(false);
 
         // When
         Optional<List<UserRepository>> repositories = userService.getRepositories(username);
 
         // Then
         assertTrue(repositories.isEmpty());
-        verify(userDb).hasUser(username);
+        verify(userDb).existsById(username);
 
     }
 }

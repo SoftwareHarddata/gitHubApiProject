@@ -1,8 +1,7 @@
 package de.neuefische.githubbingomaster.service;
 
-import de.neuefische.githubbingomaster.db.UserDb;
+import de.neuefische.githubbingomaster.db.UserMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
-import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
 import de.neuefische.githubbingomaster.model.UserRepository;
@@ -19,10 +18,10 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final GitHubApiService gitHubApiService;
-    private final UserDb userDb;
+    private final UserMongoDb userDb;
 
     @Autowired
-    public UserService(GitHubApiService gitHubApiService, UserDb userDb) {
+    public UserService(GitHubApiService gitHubApiService, UserMongoDb userDb) {
         this.gitHubApiService = gitHubApiService;
         this.userDb = userDb;
     }
@@ -32,27 +31,28 @@ public class UserService {
         if (optionalProfile.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User " + name + " is not a GitHub user");
         }
-        if (userDb.hasUser(name)) {
+
+        if (userDb.existsById(name)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User " + name + " is already in the database");
         }
         GitHubProfile profile = optionalProfile.get();
 
         User user = User.builder().name(profile.getLogin()).avatar(profile.getAvatarUrl()).build();
-        return userDb.addUser(user);
+        return userDb.save(user);
     }
 
     public List<User> listUsers() {
-        return userDb.list();
+        return userDb.findAll();
     }
 
     public Optional<User> getUserByUsername(String username) {
-        return userDb.findByUsername(username);
+        return userDb.findById(username);
     }
 
     public Optional<List<UserRepository>> getRepositories(String name) {
-        if (userDb.hasUser(name)) {
+        if (userDb.existsById(name)) {
             return Optional.of(gitHubApiService.getUserRepos(name).stream()
-                    .map(githubRepo -> new UserRepository().builder().repositoryName(githubRepo.getRepository()).repositoryWebUrl(githubRepo.getRepositoryUrl()).build())
+                    .map(githubRepo -> UserRepository.builder().repositoryName(githubRepo.getRepository()).repositoryWebUrl(githubRepo.getRepositoryUrl()).build())
                     .collect(Collectors.toList()));
         }
         return Optional.empty();
