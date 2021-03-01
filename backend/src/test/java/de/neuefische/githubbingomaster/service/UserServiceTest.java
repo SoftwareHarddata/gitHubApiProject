@@ -18,8 +18,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class UserServiceTest {
@@ -158,6 +157,9 @@ class UserServiceTest {
                         .repositoryUrl("some-url-2")
                         .build()
         ));
+
+        when(watchlistDb.existsById("123")).thenReturn(true);
+        when(watchlistDb.existsById("234")).thenReturn(false);
         when(userDb.existsById(username)).thenReturn(true);
 
         // When
@@ -165,19 +167,20 @@ class UserServiceTest {
 
         // Then
         assertThat(repositories.get(), is(List.of(
-                GitHubRepo.builder()
+                UserRepository.builder()
                         .id("123")
-                        .repository("repo1")
-                        .repositoryUrl("some-url-1")
+                        .repositoryName("repo1")
+                        .repositoryWebUrl("some-url-1")
+                        .onWatchlist(true)
                         .build(),
-                GitHubRepo.builder()
+                UserRepository.builder()
                         .id("234")
-                        .repository("repo2")
-                        .repositoryUrl("some-url-2")
+                        .repositoryName("repo2")
+                        .repositoryWebUrl("some-url-2")
+                        .onWatchlist(false)
                         .build()
         )));
         verify(userDb).existsById(username);
-
     }
 
     @Test
@@ -195,5 +198,53 @@ class UserServiceTest {
         assertTrue(repositories.isEmpty());
         verify(userDb).existsById(username);
 
+    }
+
+    @Test
+    @DisplayName("Add Repository to Watchlist")
+    public void addRepositoryToWatchlist() {
+        //Given
+        UserRepository testRepo = UserRepository.builder()
+                .id("123")
+                .repositoryName("456")
+                .repositoryWebUrl("657.890")
+                .onWatchlist(false)
+                .build();
+
+        String userName = "Graf Zahl";
+
+        when(userDb.findById(userName)).thenReturn(
+                Optional.of(User.builder()
+                        .name("Graf Zahl")
+                        .build()));
+        when(watchlistDb.existsById("123")).thenReturn(false);
+        //When
+        Optional<UserRepository> actual = userService.addToWatchlist(testRepo, userName);
+        //Then
+        assertTrue(actual.get().isOnWatchlist());
+    }
+
+    @Test
+    @DisplayName("Try add watched Repository to Watchlist")
+    public  void tryAddWatchedRepositoryToWatchlist() {
+        //Given
+        UserRepository testRepo = UserRepository.builder()
+                .id("123")
+                .repositoryName("456")
+                .repositoryWebUrl("657.890")
+                .onWatchlist(true)
+                .build();
+
+        String userName = "Graf Zahl";
+
+        when(userDb.findById(userName)).thenReturn(
+                Optional.of(User.builder()
+                        .name("Graf Zahl")
+                        .build()));
+        when(watchlistDb.existsById("123")).thenReturn(true);
+        //When
+        Optional<UserRepository> actual = userService.addToWatchlist(testRepo, userName);
+        //Then
+        assertFalse(actual.isPresent());
     }
 }

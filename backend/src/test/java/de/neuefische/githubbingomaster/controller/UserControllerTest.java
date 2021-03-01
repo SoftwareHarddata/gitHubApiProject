@@ -1,6 +1,7 @@
 package de.neuefische.githubbingomaster.controller;
 
 import de.neuefische.githubbingomaster.db.UserMongoDb;
+import de.neuefische.githubbingomaster.db.WatchlistMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.model.AddUserDto;
@@ -19,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -35,6 +38,10 @@ class UserControllerTest {
         return "http://localhost:" + port + "api/user";
     }
 
+    private String getRepoUrl(String userName) {
+        return  getUrl() + "/" + userName + "/repos";
+    }
+
     @MockBean
     private RestTemplate restTemplate;
 
@@ -44,8 +51,12 @@ class UserControllerTest {
     @Autowired
     private UserMongoDb userDb;
 
+    @Autowired
+    private WatchlistMongoDb watchlistMongoDb;
+
     @BeforeEach
     public void setup() {
+        watchlistMongoDb.deleteAll();
         userDb.deleteAll();
     }
 
@@ -202,5 +213,46 @@ class UserControllerTest {
 
         // Then
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    @DisplayName("Post New Repository to Watchlist for existing User")
+    public void postNewRepositoryForWatchlist() {
+        // GIVEN
+        String gitHubUser = "mr-foobar";
+        String repositoryId = "1";
+        String avatarUrl = "mr-foobars-avatar";
+        String repository = "hello-world";
+        String repositoryUrl = "hello-world.de";
+
+        User user = User.builder()
+                .name(gitHubUser)
+                .avatar(avatarUrl)
+                .build();
+
+        userDb.save(user);
+
+        UserRepository userRepository = UserRepository.builder()
+                .id(repositoryId)
+                .repositoryName(repository)
+                .repositoryWebUrl(repositoryUrl)
+                .onWatchlist(false)
+                .build();
+
+        UserRepository expectedRepository = UserRepository.builder()
+                .id(repositoryId)
+                .repositoryName(repository)
+                .repositoryWebUrl(repositoryUrl)
+                .onWatchlist(true)
+                .build();
+
+        // WHEN
+        ResponseEntity<UserRepository> response =
+                testRestTemplate.postForEntity(getRepoUrl(gitHubUser), userRepository, UserRepository.class);
+
+        // THEN
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(expectedRepository));
+        assertTrue(watchlistMongoDb.existsById(repositoryId));
     }
 }
