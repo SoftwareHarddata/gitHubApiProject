@@ -31,13 +31,12 @@ export default function UserDetails() {
         if (updateRepo.onWatchlist) {
             deleteRepositoryFromWatchlist(updateRepo)
             updateRepo.onWatchlist = false;
-            setUserRepositories([updateRepo, ...userRepositories.filter((repository) =>
-                repository.id !== updateRepo.id)])
+            setUserRepositories(([updateRepo, ...userRepositories.filter((repository) =>
+                repository.id !== updateRepo.id)]))
         } else {
             addRepositoryToWatchlist(updateRepo, username)
-                .then((response) => setUserRepositories([response, ...userRepositories.filter((repository) =>
-                    repository.id !== response.id)]
-                ))
+                .then((response) => setUserRepositories(([response, ...userRepositories.filter((repository) =>
+                    repository.id !== response.id)])))
         }
     }
 

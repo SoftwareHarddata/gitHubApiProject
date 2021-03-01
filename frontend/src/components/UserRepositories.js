@@ -5,8 +5,8 @@ export default function UserRepositories({userRepositories, toggleWatchlist}) {
 
     return (
         <List>
-            {userRepositories.map((repository) => (
-                <li key={repository.id}>
+            {userRepositories.map((repository, i) => (
+                <li key={i}>
                     <Link target="_blank" to={repository.repositoryWebUrl}>
                         {repository.repositoryName}
                     </Link>

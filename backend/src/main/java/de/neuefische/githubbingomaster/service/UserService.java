@@ -60,7 +60,7 @@ public class UserService {
                             .id(githubRepo.getId())
                             .repositoryName(githubRepo.getRepository())
                             .repositoryWebUrl(githubRepo.getRepositoryUrl())
-                            .onWatchlist(watchlistDb.existsById(githubRepo.getRepositoryUrl()))
+                            .onWatchlist(watchlistDb.existsById(githubRepo.getId()))
                             .build())
                     .collect(Collectors.toList()));
         }
