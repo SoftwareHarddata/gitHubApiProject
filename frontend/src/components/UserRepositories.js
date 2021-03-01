@@ -1,11 +1,16 @@
 import styled from 'styled-components/macro'
 
-export default function UserRepositories({userRepositories}) {
+export default function UserRepositories({userRepositories, toggleAddToWatchlist}) {
 
     return (
         <List>
             {userRepositories.map((repository) => (
-                <li><a target="_blank" href={repository.repositoryWebUrl}>{repository.repositoryName}</a></li>
+                <li>
+                    <Link target="_blank" to={repository.repositoryWebUrl}>
+                        {repository.repositoryName}
+                    </Link>
+                {/*  ADD A BUTTON !!!!!  */}
+                </li>
             ))}
         </List>
     )
