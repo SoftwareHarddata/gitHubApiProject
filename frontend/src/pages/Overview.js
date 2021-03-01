@@ -20,7 +20,7 @@ export default function Overview() {
 
     const deleteWatchListItem = (deleteRepository) =>{
         deleteRepositoryFromWatchlist(deleteRepository)
-        setWatchlist([watchlist.filter((repository) => repository.id !== deleteRepository.id )])
+        setWatchlist([...watchlist.filter((repository) => repository.id !== deleteRepository.id )])
     }
 
     const addNewUser = (name) =>
