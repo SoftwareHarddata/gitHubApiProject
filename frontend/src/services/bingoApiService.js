@@ -20,5 +20,6 @@ export const getWatchlist = () =>
 export const addRepositoryToWatchlist = (userRepository, username) =>
     axios.post(`${baseUrl}/${username}/repos`, userRepository).then((response)=>response.data)
 
-export const deleteRepositoryFromWatchlist = (userRepository, username) =>
-    axios.delete(`${baseUrl}/${username}/repos`, userRepository).then((response)=>response.data)
+export const deleteRepositoryFromWatchlist = (userRepository) =>
+    axios.delete(`${baseUrl}/repos/${userRepository.id}`)
+

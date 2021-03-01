@@ -57,8 +57,8 @@ public class UserController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, userRepository + " already exists in watchlist database"));
     }
 
-    @DeleteMapping("{username}/repos")
-    public UserRepository deleteRepository(@RequestBody UserRepository userRepository){
-        return userService.deleteFromWatchlist(userRepository);
+    @DeleteMapping("repos/{id}")
+    public void deleteRepository(@PathVariable String id){
+        userService.deleteFromWatchlist(id);
     }
 }

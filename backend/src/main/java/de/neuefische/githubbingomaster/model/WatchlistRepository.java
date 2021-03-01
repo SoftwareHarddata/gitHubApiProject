@@ -14,7 +14,9 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Builder
 @Document(collection="watchlist")
 public class WatchlistRepository {
+
     @Id
+    private String id;
     private String repositoryWebUrl;
     private String repositoryName;
     private String avatarUrl;

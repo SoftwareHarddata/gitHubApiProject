@@ -66,9 +66,16 @@ class GitHubApiServiceTest {
         String gitHubUser = "super-user";
         String gitHubUrl = "https://api.github.com/users/" + gitHubUser + "/repos";
         GitHubRepo[] mockedRepos = {
-                new GitHubRepo("repo1", "some-url-1"),
-                new GitHubRepo("repo2", "some-url-2")
-
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
         };
 
         when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class)).thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
@@ -78,8 +85,16 @@ class GitHubApiServiceTest {
 
         // THEN
         assertThat(actual, is(List.of(
-                new GitHubRepo("repo1", "some-url-1"),
-                new GitHubRepo("repo2", "some-url-2")
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
         )));
     }
 

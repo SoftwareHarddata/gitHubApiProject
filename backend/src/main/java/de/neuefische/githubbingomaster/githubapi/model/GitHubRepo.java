@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class GitHubRepo {
 
+    private String id;
     @JsonProperty("name")
     private String repository;
     @JsonProperty("html_url")

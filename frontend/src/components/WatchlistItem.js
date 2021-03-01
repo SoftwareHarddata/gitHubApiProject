@@ -1,7 +1,7 @@
 import styled from 'styled-components/macro'
 import {Link} from "react-router-dom";
 
-export default function WatchlistItem({repository}) {
+export default function WatchlistItem({repository, onDeleteWatchlistItem}) {
 
     return (
         <li>
@@ -9,6 +9,9 @@ export default function WatchlistItem({repository}) {
             <Link to={repository.repositoryWebUrl}>
                 {repository.repositoryName}
             </Link>
+            <button onClick={() => onDeleteWatchlistItem(repository)} type="button" >
+                Delete
+            </button>
         </li>
     )
 

@@ -57,6 +57,7 @@ public class UserService {
         if (userDb.existsById(name)) {
             return Optional.of(gitHubApiService.getUserRepos(name).stream()
                     .map(githubRepo -> UserRepository.builder()
+                            .id(githubRepo.getId())
                             .repositoryName(githubRepo.getRepository())
                             .repositoryWebUrl(githubRepo.getRepositoryUrl())
                             .onWatchlist(watchlistDb.existsById(githubRepo.getRepositoryUrl()))
@@ -67,13 +68,14 @@ public class UserService {
     }
 
     public Optional<UserRepository> addToWatchlist(UserRepository userRepository, String username) {
-        if (watchlistDb.existsById(userRepository.getRepositoryWebUrl())) {
+        if (watchlistDb.existsById(userRepository.getId())) {
             return Optional.empty();
         }
 
         String avatarUrl = getUserByUsername(username).orElse(new User()).getAvatar();
 
         WatchlistRepository watchlistRepository = WatchlistRepository.builder()
+                .id(userRepository.getId())
                 .repositoryName(userRepository.getRepositoryName())
                 .repositoryWebUrl(userRepository.getRepositoryWebUrl())
                 .avatarUrl(avatarUrl)
@@ -85,10 +87,8 @@ public class UserService {
         return Optional.of(userRepository);
     }
 
-    public UserRepository deleteFromWatchlist(UserRepository userRepository) {
-        watchlistDb.deleteById(userRepository.getRepositoryWebUrl());
-        userRepository.setOnWatchlist(false);
-        return userRepository;
+    public void deleteFromWatchlist(String id) {
+        watchlistDb.deleteById(id);
     }
 
     public List<WatchlistRepository> getWatchlist(){

@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 public class UserRepository {
 
+    private String id;
     private String repositoryName;
     private String repositoryWebUrl;
     private boolean onWatchlist;

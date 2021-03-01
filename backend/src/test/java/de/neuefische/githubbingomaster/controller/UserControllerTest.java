@@ -157,8 +157,16 @@ class UserControllerTest {
         //Given
         String gitHubUrl = "https://api.github.com/users/supergithubuser/repos";
         GitHubRepo[] mockedRepos = {
-                new GitHubRepo("repo1", "some-url-1"),
-                new GitHubRepo("repo2", "some-url-2")
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
 
         };
         userDb.save(new User("supergithubuser", "someavatar"));
@@ -173,8 +181,16 @@ class UserControllerTest {
         // Then
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(new UserRepository[]{
-                new UserRepository("repo1", "some-url-1", false),
-                new UserRepository("repo2", "some-url-2", false)
+                UserRepository.builder()
+                        .id("123")
+                        .repositoryName("repo1")
+                        .repositoryWebUrl("some-url-1")
+                        .build(),
+                UserRepository.builder()
+                        .id("234")
+                        .repositoryName("repo2")
+                        .repositoryWebUrl("some-url-2")
+                        .build()
         }));
     }
 

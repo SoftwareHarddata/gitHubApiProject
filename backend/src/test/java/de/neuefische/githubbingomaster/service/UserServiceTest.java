@@ -147,8 +147,16 @@ class UserServiceTest {
         //Given
         String username = "mr-foobar";
         when(gitHubApiService.getUserRepos(username)).thenReturn(List.of(
-                new GitHubRepo("repository1", "some-url-1"),
-                new GitHubRepo("repository2", "some-url-2")
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
         ));
         when(userDb.existsById(username)).thenReturn(true);
 
@@ -157,8 +165,16 @@ class UserServiceTest {
 
         // Then
         assertThat(repositories.get(), is(List.of(
-                new UserRepository("repository1", "some-url-1", false),
-                new UserRepository("repository2", "some-url-2", false)
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
         )));
         verify(userDb).existsById(username);
 

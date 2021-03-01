@@ -29,15 +29,14 @@ export default function UserDetails() {
 
     const toggleWatchlist = (updateRepo) => {
         if (updateRepo.onWatchlist) {
-            deleteRepositoryFromWatchlist(updateRepo, username)
-                .then((response) => setUserRepositories([...userRepositories.filter((repository) =>
-                    repository.repositoryWebUrl !== response.repositoryWebUrl
-                )
-                    , response]))
+            deleteRepositoryFromWatchlist(updateRepo)
+            updateRepo.onWatchlist = false;
+            setUserRepositories([updateRepo, ...userRepositories.filter((repository) =>
+                repository.id !== updateRepo.id)])
         } else {
             addRepositoryToWatchlist(updateRepo, username)
                 .then((response) => setUserRepositories([response, ...userRepositories.filter((repository) =>
-                    repository.repositoryWebUrl !== response.repositoryWebUrl)]
+                    repository.id !== response.id)]
                 ))
         }
     }
