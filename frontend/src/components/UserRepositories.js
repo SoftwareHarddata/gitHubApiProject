@@ -1,15 +1,16 @@
 import styled from 'styled-components/macro'
+import {Link} from "react-router-dom";
 
-export default function UserRepositories({userRepositories, toggleAddToWatchlist}) {
+export default function UserRepositories({userRepositories, toggleWatchlist}) {
 
     return (
         <List>
             {userRepositories.map((repository) => (
-                <li>
+                <li key={repository.repositoryWebUrl}>
                     <Link target="_blank" to={repository.repositoryWebUrl}>
                         {repository.repositoryName}
                     </Link>
-                {/*  ADD A BUTTON !!!!!  */}
+                    <button onClick={() => {toggleWatchlist(repository)}} type="button">Favorite</button>
                 </li>
             ))}
         </List>

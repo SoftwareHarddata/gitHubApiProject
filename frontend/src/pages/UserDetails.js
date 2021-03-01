@@ -1,6 +1,11 @@
 import {useParams} from 'react-router-dom'
 import {useEffect, useState} from 'react'
-import {getUser, getUserRepositories} from '../services/bingoApiService'
+import {
+    addRepositoryToWatchlist,
+    deleteRepositoryFromWatchlist,
+    getUser,
+    getUserRepositories
+} from '../services/bingoApiService'
 import styled from 'styled-components/macro'
 import UserRepositories from "../components/UserRepositories";
 
@@ -12,7 +17,7 @@ export default function UserDetails() {
     useEffect(() => {
         getUser(username).then(setUserData)
         getUserRepositories(username).then(setUserRepositories)
-    }, [username])
+    }, [])
 
     if (!userData) {
         return (
@@ -22,11 +27,27 @@ export default function UserDetails() {
         )
     }
 
+    const toggleWatchlist = (updateRepo) => {
+        if (updateRepo.onWatchlist) {
+            deleteRepositoryFromWatchlist(updateRepo, username)
+                .then((response) => setUserRepositories([...userRepositories.filter((repository) =>
+                    repository.repositoryWebUrl !== response.repositoryWebUrl
+                )
+                    , response]))
+        } else {
+            addRepositoryToWatchlist(updateRepo, username)
+                .then((response) => setUserRepositories([response, ...userRepositories.filter((repository) =>
+                    repository.repositoryWebUrl !== response.repositoryWebUrl)]
+                ))
+        }
+    }
+
     return (
         <UserDetailsContainer>
             <img src={userData.avatar} alt={userData.name}/>
             <span className="user-name">{userData.name}</span>
-            {userRepositories && <UserRepositories userRepositories={userRepositories}/>}
+            {userRepositories && <UserRepositories userRepositories={userRepositories}
+                                                   toggleWatchlist={toggleWatchlist}/>}
             {!userRepositories && <span>Loading repositories</span>}
         </UserDetailsContainer>
     )

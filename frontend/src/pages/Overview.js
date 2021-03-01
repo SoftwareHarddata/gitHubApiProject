@@ -6,7 +6,7 @@ import Watchlist from "../components/Watchlist";
 
 export default function Overview() {
     const [users, setUsers] = useState([])
-    const [watchlist, setWatchlist] = useState()
+    const [watchlist, setWatchlist] = useState([])
     useEffect(() => {
         getUsers()
             .then(setUsers)

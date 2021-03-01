@@ -173,8 +173,8 @@ class UserControllerTest {
         // Then
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(new UserRepository[]{
-                new UserRepository("repo1", "some-url-1"),
-                new UserRepository("repo2", "some-url-2")
+                new UserRepository("repo1", "some-url-1", false),
+                new UserRepository("repo2", "some-url-2", false)
         }));
     }
 

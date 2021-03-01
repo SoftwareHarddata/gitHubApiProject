@@ -1,6 +1,7 @@
 package de.neuefische.githubbingomaster.service;
 
 import de.neuefische.githubbingomaster.db.UserMongoDb;
+import de.neuefische.githubbingomaster.db.WatchlistMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
@@ -25,7 +26,8 @@ class UserServiceTest {
 
     private final GitHubApiService gitHubApiService = mock(GitHubApiService.class);
     private final UserMongoDb userDb = mock(UserMongoDb.class);
-    private final UserService userService = new UserService(gitHubApiService, userDb);
+    private final WatchlistMongoDb watchlistDb = mock(WatchlistMongoDb.class);
+    private final UserService userService = new UserService(gitHubApiService, userDb, watchlistDb);
 
     @Test
     @DisplayName("A new user whose name is a github login is added")
@@ -155,8 +157,8 @@ class UserServiceTest {
 
         // Then
         assertThat(repositories.get(), is(List.of(
-                new UserRepository("repository1", "some-url-1"),
-                new UserRepository("repository2", "some-url-2")
+                new UserRepository("repository1", "some-url-1", false),
+                new UserRepository("repository2", "some-url-2", false)
         )));
         verify(userDb).existsById(username);
 
