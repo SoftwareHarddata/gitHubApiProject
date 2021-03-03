@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class LoginControllerTest {
@@ -38,7 +37,7 @@ class LoginControllerTest {
     private TestRestTemplate restTemplate;
 
     @Test
-    public void loginWithValidCredentailsShouldGenerateJwtToken() {
+    public void loginWithValidCredentialsShouldGenerateJwtToken() {
         //GIVEN
         String username = "jan";
         String password = "super-secret";
@@ -58,7 +57,7 @@ class LoginControllerTest {
     }
 
     @Test
-    public void loginWithInValidCredentailsShouldGenerateJwtToken() {
+    public void loginWithInValidCredentialsShouldGenerateJwtToken() {
         //GIVEN
         String username = "jan";
         String password = "super-secret";
