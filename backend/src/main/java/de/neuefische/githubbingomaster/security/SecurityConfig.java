@@ -8,17 +8,20 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final AppUserDetailsService appUserDetailsService;
+    private final JwtAuthFilter filter;
 
     @Autowired
-    public SecurityConfig(AppUserDetailsService appUserDetailsService) {
+    public SecurityConfig(AppUserDetailsService appUserDetailsService, JwtAuthFilter filter) {
         this.appUserDetailsService = appUserDetailsService;
+        this.filter = filter;
     }
 
     @Override
@@ -37,7 +40,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST,"/auth/login").permitAll()
                 .antMatchers("/api/**").authenticated()
-                .and().sessionManagement().disable();
+                .and().sessionManagement().disable()
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override
