@@ -67,12 +67,10 @@ class LoginControllerTest {
 
 
         //WHEN
-        ResponseEntity<String> response = restTemplate.postForEntity(getUrl(), new LoginDto(username, "worng paswword"), String.class);
+        ResponseEntity<String> response = restTemplate.postForEntity(getUrl(), new LoginDto(username, "wrong password"), String.class);
 
         //THEN
         assertThat(response.getStatusCode(), Matchers.is(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), Matchers.is("jwt token"));
-
 
     }
 
