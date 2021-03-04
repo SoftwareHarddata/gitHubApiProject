@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext } from 'react'
 import { getUsers, postUser } from '../services/bingoApiService'
 import AddNewUser from '../components/AddNewUser'
 import UserList from '../components/UserList'
+import { useAuth } from '../auth/AuthContext'
 
-export default function UserOverview({token}) {
+export default function UserOverview() {
+  const { token } = useAuth()
   const [users, setUsers] = useState([])
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export default function UserOverview({token}) {
 
   return (
     <>
-      <AddNewUser onAdd={addNewUser} token={token}/>
+      <AddNewUser onAdd={addNewUser} token={token} />
       <UserList users={users} />
     </>
   )

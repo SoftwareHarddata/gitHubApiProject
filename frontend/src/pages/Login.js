@@ -1,49 +1,48 @@
-import {Component, useState} from 'react'
+import { Component, useState } from 'react'
 import styled from 'styled-components/macro'
-import {loginUser} from "../services/loginService";
-import {Redirect} from 'react-router-dom';
+import { loginUser } from '../services/loginService'
+import { Redirect } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
 
+export default function Login() {
+  const { token, setToken } = useAuth()
+  const [userName, setUserName] = useState('')
+  const [userPassword, setUserPassword] = useState('')
 
-export default function Login({setToken, token}) {
-    const [userName, setUserName] = useState("")
-    const [userPassword, setUserPassword] = useState("")
-
-
-    const handleSubmit = (event) => {
-        event.preventDefault()
-        if (!userName && !userPassword) {
-            return
-        }
-        loginUser(userName, userPassword).then(setToken)
-        setUserName('')
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    if (!userName && !userPassword) {
+      return
     }
-    if (token) {
-        return <Redirect to="/"/>
-    }
+    loginUser(userName, userPassword).then(setToken)
+    setUserName('')
+  }
+  if (token) {
+    return <Redirect to="/" />
+  }
 
-    return (
-        <>
-            <p>Please Login</p>
+  return (
+    <>
+      <p>Please Login</p>
 
-        <Form onSubmit={handleSubmit}>
-            <input
-                placeholder="Username"
-                type="text"
-                value={userName}
-                onChange={({target}) => setUserName(target.value)}
-            />
-            <input
-                placeholder="Password"
-                type="password"
-                value={userPassword}
-                onChange={({target}) => setUserPassword(target.value)}
-            />
-            <button type="submit">login</button>
-        </Form>
-        </>
-    )
+      <Form onSubmit={handleSubmit}>
+        <input
+          placeholder="Username"
+          type="text"
+          value={userName}
+          onChange={({ target }) => setUserName(target.value)}
+        />
+        <input
+          placeholder="Password"
+          type="password"
+          value={userPassword}
+          onChange={({ target }) => setUserPassword(target.value)}
+        />
+        <button type="submit">login</button>
+      </Form>
+    </>
+  )
 }
-
 
 const Form = styled.form`
   display: flex;
@@ -54,11 +53,10 @@ const Form = styled.form`
     text-align: center;
     margin: 8px;
   }
-    button {
-      padding: 8px;
-      margin: 8px;
-      background-color: chocolate;
-      font-family: "Al Nile";
-    }
-  
+  button {
+    padding: 8px;
+    margin: 8px;
+    background-color: chocolate;
+    font-family: 'Al Nile';
+  }
 `
