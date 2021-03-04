@@ -7,6 +7,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,7 +26,8 @@ class JwtUtilsTest {
     @Test
     public void generateJwtToken(){
         //GIVEN
-        when(timeUtils.now()).thenReturn(Instant.ofEpochSecond(1614772165L));
+        Instant now = Instant.ofEpochSecond(Instant.now().getEpochSecond());
+        when(timeUtils.now()).thenReturn(now);
         String secret = "super-secret";
         when(jwtConfig.getJwtSecret()).thenReturn(secret);
 
@@ -35,9 +37,8 @@ class JwtUtilsTest {
         //THEN
         Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
         assertThat(claims.getSubject(), Matchers.is("jan"));
-        assertThat(claims.getIssuedAt(), Matchers.is(new Date(1614772165000L)));
-        int fourHoursInMilliSeconds = 4 * 60 * 60 * 1000;
-        assertThat(claims.getExpiration(), Matchers.is(new Date(1614772165000L + fourHoursInMilliSeconds)));
+        assertThat(claims.getIssuedAt(), Matchers.is(Date.from(now)));
+        assertThat(claims.getExpiration(), Matchers.is(Date.from(now.plus(Duration.ofHours(4)))));
         assertThat(claims.get("data"), Matchers.is("value"));
     }
 
