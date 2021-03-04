@@ -4,14 +4,14 @@ import {getUser, getUserRepositories} from '../services/bingoApiService'
 import styled from 'styled-components/macro'
 import UserRepositories from "../components/UserRepositories";
 
-export default function UserDetails() {
+export default function UserDetails({token}) {
     const {username} = useParams()
     const [userData, setUserData] = useState()
     const [userRepositories, setUserRepositories] = useState()
 
     useEffect(() => {
-        getUser(username).then(setUserData)
-        getUserRepositories(username).then(setUserRepositories)
+        getUser(username, token).then(setUserData)
+        getUserRepositories(username, token).then(setUserRepositories)
     }, [username])
 
     if (!userData) {

@@ -3,17 +3,17 @@ import { getUsers, postUser } from '../services/bingoApiService'
 import AddNewUser from '../components/AddNewUser'
 import UserList from '../components/UserList'
 
-export default function UserOverview() {
+export default function UserOverview({token}) {
   const [users, setUsers] = useState([])
 
   useEffect(() => {
-    getUsers()
+    getUsers(token)
       .then(setUsers)
       .catch((error) => console.error(error))
   }, [])
 
-  const addNewUser = (name) =>
-    postUser(name)
+  const addNewUser = (name, token) =>
+    postUser(name, token)
       .then((newUser) => {
         const updatedUsers = [...users, newUser]
         setUsers(updatedUsers)
@@ -22,7 +22,7 @@ export default function UserOverview() {
 
   return (
     <>
-      <AddNewUser onAdd={addNewUser} />
+      <AddNewUser onAdd={addNewUser} token={token}/>
       <UserList users={users} />
     </>
   )

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 
-export default function AddNewUser({ onAdd }) {
+export default function AddNewUser({ onAdd, token }) {
   const [name, setName] = useState('')
 
   const handleSubmit = (event) => {
@@ -9,7 +9,7 @@ export default function AddNewUser({ onAdd }) {
     if (!name) {
       return
     }
-    onAdd(name)
+    onAdd(name, token)
     setName('')
   }
 
