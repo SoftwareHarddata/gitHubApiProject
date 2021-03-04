@@ -4,8 +4,11 @@ import de.neuefische.githubbingomaster.db.UserMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.model.AddUserDto;
+import de.neuefische.githubbingomaster.model.LoginDto;
 import de.neuefische.githubbingomaster.model.User;
 import de.neuefische.githubbingomaster.model.UserRepository;
+import de.neuefische.githubbingomaster.security.AppUser;
+import de.neuefische.githubbingomaster.security.AppUserDb;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,8 +17,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,9 +47,17 @@ class UserControllerTest {
     @Autowired
     private UserMongoDb userDb;
 
+    @Autowired
+    private AppUserDb appUserDb;
+
+
+    @Autowired
+    private PasswordEncoder encoder;
+
     @BeforeEach
     public void setup() {
         userDb.deleteAll();
+        appUserDb.deleteAll();
     }
 
     @Test
@@ -62,12 +73,36 @@ class UserControllerTest {
                         GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
 
         // WHEN
-        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), userDto, User.class);
+        String jwtToken = loginToApp();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<AddUserDto> entity = new HttpEntity<>(userDto, headers);
+        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), entity, User.class);
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(User.builder().name(gitHubUser).avatar(avatarUrl).build()));
         assertTrue(userDb.existsById(gitHubUser));
+    }
+
+    @Test
+    @DisplayName("Adding a new user ist forbidden when user has not valid token")
+    public void addNewUserForbidden(){
+        // GIVEN
+        String gitHubUser = "mr-foobar";
+        String avatarUrl = "mr-foobars-avatar";
+        String gitHubUrl = "https://api.github.com/users/" + gitHubUser;
+        AddUserDto userDto = AddUserDto.builder().name(gitHubUser).build();
+        when(restTemplate.getForEntity(gitHubUrl, GitHubProfile.class))
+                .thenReturn(ResponseEntity.ok(
+                        GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
+
+        //WHEN
+        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), userDto, User.class);
+
+        //THEN
+        assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
     @Test
@@ -84,7 +119,12 @@ class UserControllerTest {
                         GitHubProfile.builder().login(gitHubUser).avatarUrl(avatarUrl).build()));
 
         // WHEN
-        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), userDto, User.class);
+        String jwtToken = loginToApp();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<AddUserDto> entity = new HttpEntity<>(userDto, headers);
+        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), entity, User.class);
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
@@ -101,7 +141,12 @@ class UserControllerTest {
                 .thenThrow(RestClientException.class);
 
         // WHEN
-        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), userDto, User.class);
+        String jwtToken = loginToApp();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<AddUserDto> entity = new HttpEntity<>(userDto, headers);
+        ResponseEntity<User> response = testRestTemplate.postForEntity(getUrl(), entity, User.class);
 
         // THEN
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
@@ -115,7 +160,11 @@ class UserControllerTest {
         userDb.save(new User("secondUser", "someOtheravatar"));
 
         //WHEN
-        ResponseEntity<User[]> response = testRestTemplate.getForEntity(getUrl(), User[].class);
+        String jwtToken = loginToApp();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<User[]> response = testRestTemplate.exchange(getUrl(), HttpMethod.GET, entity, User[].class);
 
         //THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
@@ -131,7 +180,11 @@ class UserControllerTest {
         userDb.save(new User("supergithubuser", "someavatar"));
         userDb.save(new User("secondUser", "someOtheravatar"));
         //WHEN
-        ResponseEntity<User> response = testRestTemplate.getForEntity(getUrl() + "/secondUser", User.class);
+        String jwtToken = loginToApp();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<User> response = testRestTemplate.exchange(getUrl() + "/secondUser", HttpMethod.GET, entity, User.class);
 
         //THEN
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
@@ -144,8 +197,13 @@ class UserControllerTest {
         //GIVEN
         userDb.save(new User("supergithubuser", "someavatar"));
         userDb.save(new User("secondUser", "someOtheravatar"));
+
         //WHEN
-        ResponseEntity<Void> response = testRestTemplate.getForEntity(getUrl() + "/unknownUser", Void.class);
+        String jwtToken = loginToApp();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<Void> response = testRestTemplate.exchange(getUrl() + "/unknownUser", HttpMethod.GET, entity, Void.class);
 
         //THEN
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
@@ -168,7 +226,11 @@ class UserControllerTest {
                 .thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
 
         // When
-        ResponseEntity<UserRepository[]> response = testRestTemplate.getForEntity(getUrl() + "/supergithubuser/repos", UserRepository[].class);
+        String jwtToken = loginToApp();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<UserRepository[]> response = testRestTemplate.exchange(getUrl() + "/supergithubuser/repos", HttpMethod.GET, entity, UserRepository[].class);
 
         // Then
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
@@ -182,9 +244,21 @@ class UserControllerTest {
     @DisplayName("Get repositories should throw error for non existing user")
     public void getRepositoriesShouldThrowExceptionForNonExistingUser() {
         // When
-        ResponseEntity<Void> response = testRestTemplate.getForEntity(getUrl() + "/supergithubuser/repos", Void.class);
+        String jwtToken = loginToApp();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<Void> response = testRestTemplate.exchange(getUrl() + "/supergithubuser/repos", HttpMethod.GET, entity, Void.class);
 
         // Then
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
     }
+
+    private String loginToApp() {
+        String password = encoder.encode("superSecretPassword");
+        appUserDb.save(new AppUser("jan", password));
+        ResponseEntity<String> loginResponse = testRestTemplate.postForEntity("http://localhost:" + port + "auth/login", new LoginDto("jan", "superSecretPassword"), String.class);
+        return loginResponse.getBody();
+    }
+
 }
