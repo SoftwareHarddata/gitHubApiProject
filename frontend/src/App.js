@@ -4,6 +4,7 @@ import Overview from './pages/Overview'
 import Login from './pages/Login'
 import AuthProvider from './auth/AuthProvider'
 import ProtectedRoute from './auth/ProtectedRoute'
+import RepositoryDetails from "./pages/RepositoryDetails";
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
           </ProtectedRoute>
           <ProtectedRoute path="/user/:username">
             <UserDetails />
+          </ProtectedRoute>
+          <ProtectedRoute path="/repo/:username/:reponame">
+            <RepositoryDetails />
           </ProtectedRoute>
         </Switch>
       </div>
