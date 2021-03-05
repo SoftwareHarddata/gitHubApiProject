@@ -6,7 +6,6 @@ import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
 import de.neuefische.githubbingomaster.model.UserRepository;
-import de.neuefische.githubbingomaster.model.WatchlistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -67,31 +66,4 @@ public class UserService {
         return Optional.empty();
     }
 
-    public Optional<UserRepository> addToWatchlist(UserRepository userRepository, String username) {
-        if (watchlistDb.existsById(userRepository.getId())) {
-            return Optional.empty();
-        }
-
-        String avatarUrl = getUserByUsername(username).orElse(new User()).getAvatar();
-
-        WatchlistRepository watchlistRepository = WatchlistRepository.builder()
-                .id(userRepository.getId())
-                .repositoryName(userRepository.getRepositoryName())
-                .repositoryWebUrl(userRepository.getRepositoryWebUrl())
-                .avatarUrl(avatarUrl)
-                .build();
-
-        watchlistDb.save(watchlistRepository);
-        userRepository.setOnWatchlist(true);
-
-        return Optional.of(userRepository);
-    }
-
-    public void deleteFromWatchlist(String id) {
-        watchlistDb.deleteById(id);
-    }
-
-    public List<WatchlistRepository> getWatchlist(){
-        return watchlistDb.findAll();
-    }
 }

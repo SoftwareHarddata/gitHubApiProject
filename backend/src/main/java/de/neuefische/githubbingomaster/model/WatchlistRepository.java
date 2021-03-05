@@ -19,5 +19,4 @@ public class WatchlistRepository {
     private String id;
     private String repositoryWebUrl;
     private String repositoryName;
-    private String avatarUrl;
 }

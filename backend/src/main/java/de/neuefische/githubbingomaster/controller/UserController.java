@@ -1,10 +1,8 @@
 package de.neuefische.githubbingomaster.controller;
 
-import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.model.AddUserDto;
 import de.neuefische.githubbingomaster.model.User;
 import de.neuefische.githubbingomaster.model.UserRepository;
-import de.neuefische.githubbingomaster.model.WatchlistRepository;
 import de.neuefische.githubbingomaster.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,21 +42,5 @@ public class UserController {
     public List<UserRepository> getRepositories(@PathVariable String username) {
         return userService.getRepositories(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, username + " does not exist in database"));
-    }
-
-    @GetMapping("watchlist")
-    public List<WatchlistRepository> getWatchlistRepos(){
-        return userService.getWatchlist();
-    }
-
-    @PostMapping("{username}/repos")
-    public UserRepository postRepository(@RequestBody UserRepository userRepository, @PathVariable String username){
-        return userService.addToWatchlist(userRepository, username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, userRepository + " already exists in watchlist database"));
-    }
-
-    @DeleteMapping("repos/{id}")
-    public void deleteRepository(@PathVariable String id){
-        userService.deleteFromWatchlist(id);
     }
 }

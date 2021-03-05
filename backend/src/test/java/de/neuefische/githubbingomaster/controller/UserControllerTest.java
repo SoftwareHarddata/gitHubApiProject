@@ -4,10 +4,7 @@ import de.neuefische.githubbingomaster.db.UserMongoDb;
 import de.neuefische.githubbingomaster.db.WatchlistMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
-import de.neuefische.githubbingomaster.model.AddUserDto;
-import de.neuefische.githubbingomaster.model.LoginDto;
-import de.neuefische.githubbingomaster.model.User;
-import de.neuefische.githubbingomaster.model.UserRepository;
+import de.neuefische.githubbingomaster.model.*;
 import de.neuefische.githubbingomaster.security.AppUser;
 import de.neuefische.githubbingomaster.security.AppUserDb;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,9 +38,6 @@ class UserControllerTest {
         return "http://localhost:" + port + "api/user";
     }
 
-    private String getRepoUrl(String userName) {
-        return  getUrl() + "/" + userName + "/repos";
-    }
 
     @MockBean
     private RestTemplate restTemplate;
@@ -238,6 +232,11 @@ class UserControllerTest {
                         .build()
 
         };
+        watchlistMongoDb.save(WatchlistRepository.builder()
+                .id("123")
+                .repositoryName("repo1")
+                .repositoryWebUrl("some-url-1")
+                .build());
         userDb.save(new User("supergithubuser", "someavatar"));
 
 
@@ -258,11 +257,13 @@ class UserControllerTest {
                         .id("123")
                         .repositoryName("repo1")
                         .repositoryWebUrl("some-url-1")
+                        .onWatchlist(true)
                         .build(),
                 UserRepository.builder()
                         .id("234")
                         .repositoryName("repo2")
                         .repositoryWebUrl("some-url-2")
+                        .onWatchlist(false)
                         .build()
         }));
     }
@@ -279,47 +280,6 @@ class UserControllerTest {
 
         // Then
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-    }
-
-    @Test
-    @DisplayName("Post New Repository to Watchlist for existing User")
-    public void postNewRepositoryForWatchlist() {
-        // GIVEN
-        String gitHubUser = "mr-foobar";
-        String repositoryId = "1";
-        String avatarUrl = "mr-foobars-avatar";
-        String repository = "hello-world";
-        String repositoryUrl = "hello-world.de";
-
-        User user = User.builder()
-                .name(gitHubUser)
-                .avatar(avatarUrl)
-                .build();
-
-        userDb.save(user);
-
-        UserRepository userRepository = UserRepository.builder()
-                .id(repositoryId)
-                .repositoryName(repository)
-                .repositoryWebUrl(repositoryUrl)
-                .onWatchlist(false)
-                .build();
-
-        UserRepository expectedRepository = UserRepository.builder()
-                .id(repositoryId)
-                .repositoryName(repository)
-                .repositoryWebUrl(repositoryUrl)
-                .onWatchlist(true)
-                .build();
-
-        // WHEN
-        ResponseEntity<UserRepository> response =
-                testRestTemplate.postForEntity(getRepoUrl(gitHubUser), userRepository, UserRepository.class);
-
-        // THEN
-        assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(expectedRepository));
-        assertTrue(watchlistMongoDb.existsById(repositoryId));
     }
 
     private String loginToApp() {
