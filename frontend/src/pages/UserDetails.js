@@ -1,35 +1,39 @@
-import {useParams} from 'react-router-dom'
-import {useEffect, useState} from 'react'
-import {getUser, getUserRepositories} from '../services/bingoApiService'
+import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { getUser, getUserRepositories } from '../services/bingoApiService'
 import styled from 'styled-components/macro'
-import UserRepositories from "../components/UserRepositories";
+import UserRepositories from '../components/UserRepositories'
+import { useAuth } from '../auth/AuthContext'
 
-export default function UserDetails({token}) {
-    const {username} = useParams()
-    const [userData, setUserData] = useState()
-    const [userRepositories, setUserRepositories] = useState()
+export default function UserDetails() {
+  const { token } = useAuth()
+  const { username } = useParams()
+  const [userData, setUserData] = useState()
+  const [userRepositories, setUserRepositories] = useState()
 
-    useEffect(() => {
-        getUser(username, token).then(setUserData)
-        getUserRepositories(username, token).then(setUserRepositories)
-    }, [username])
+  useEffect(() => {
+    getUser(username, token).then(setUserData)
+    getUserRepositories(username, token).then(setUserRepositories)
+  }, [username])
 
-    if (!userData) {
-        return (
-            <section>
-                <p>Loading</p>
-            </section>
-        )
-    }
-
+  if (!userData) {
     return (
-        <UserDetailsContainer>
-            <img src={userData.avatar} alt={userData.name}/>
-            <span className="user-name">{userData.name}</span>
-            {userRepositories && <UserRepositories userRepositories={userRepositories}/>}
-            {!userRepositories && <span>Loading repositories</span>}
-        </UserDetailsContainer>
+      <section>
+        <p>Loading</p>
+      </section>
     )
+  }
+
+  return (
+    <UserDetailsContainer>
+      <img src={userData.avatar} alt={userData.name} />
+      <span className="user-name">{userData.name}</span>
+      {userRepositories && (
+        <UserRepositories userRepositories={userRepositories} />
+      )}
+      {!userRepositories && <span>Loading repositories</span>}
+    </UserDetailsContainer>
+  )
 }
 
 const UserDetailsContainer = styled.section`

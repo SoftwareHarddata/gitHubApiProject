@@ -1,27 +1,28 @@
 import { Switch, Route } from 'react-router-dom'
 import UserDetails from './pages/UserDetails'
 import UserOverview from './pages/UserOverview'
-import Login from "./pages/Login";
-import {useState} from 'react'
+import Login from './pages/Login'
+import AuthProvider from './auth/AuthProvider'
+import ProtectedRoute from './auth/ProtectedRoute'
 
 function App() {
-  const [token, setToken] = useState(undefined);
-
   return (
-    <div>
-      <Switch>
-        <Route exact path="/login">
-          <Login setToken={setToken} token={token}/>
-        </Route>
+    <AuthProvider>
+      <div>
+        <Switch>
+          <Route exact path="/login">
+            <Login />
+          </Route>
 
-        <Route exact path="/">
-          <UserOverview token={token}/>
-        </Route>
-        <Route path="/user/:username">
-          <UserDetails token={token} />
-        </Route>
-      </Switch>
-    </div>
+          <ProtectedRoute exact path="/">
+            <UserOverview />
+          </ProtectedRoute>
+          <ProtectedRoute path="/user/:username">
+            <UserDetails />
+          </ProtectedRoute>
+        </Switch>
+      </div>
+    </AuthProvider>
   )
 }
 

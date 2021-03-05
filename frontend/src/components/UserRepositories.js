@@ -1,15 +1,17 @@
 import styled from 'styled-components/macro'
 
-export default function UserRepositories({userRepositories}) {
-
-    return (
-        <List>
-            {userRepositories.map((repository) => (
-                <li key={repository.repositoryWebUrl}><a target="_blank" href={repository.repositoryWebUrl}>{repository.repositoryName}</a></li>
-            ))}
-        </List>
-    )
-
+export default function UserRepositories({ userRepositories }) {
+  return (
+    <List>
+      {userRepositories.map((repository) => (
+        <li key={repository.repositoryWebUrl}>
+          <a target="_blank" href={repository.repositoryWebUrl}>
+            {repository.repositoryName}
+          </a>
+        </li>
+      ))}
+    </List>
+  )
 }
 
 const List = styled.ul`
