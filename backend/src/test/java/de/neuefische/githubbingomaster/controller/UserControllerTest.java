@@ -1,12 +1,10 @@
 package de.neuefische.githubbingomaster.controller;
 
 import de.neuefische.githubbingomaster.db.UserMongoDb;
+import de.neuefische.githubbingomaster.db.WatchlistMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
-import de.neuefische.githubbingomaster.model.AddUserDto;
-import de.neuefische.githubbingomaster.model.LoginDto;
-import de.neuefische.githubbingomaster.model.User;
-import de.neuefische.githubbingomaster.model.UserRepository;
+import de.neuefische.githubbingomaster.model.*;
 import de.neuefische.githubbingomaster.security.AppUser;
 import de.neuefische.githubbingomaster.security.AppUserDb;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +36,7 @@ class UserControllerTest {
         return "http://localhost:" + port + "api/user";
     }
 
+
     @MockBean
     private RestTemplate restTemplate;
 
@@ -48,6 +47,9 @@ class UserControllerTest {
     private UserMongoDb userDb;
 
     @Autowired
+    private WatchlistMongoDb watchlistMongoDb;
+
+    @Autowired
     private AppUserDb appUserDb;
 
 
@@ -56,6 +58,7 @@ class UserControllerTest {
 
     @BeforeEach
     public void setup() {
+        watchlistMongoDb.deleteAll();
         userDb.deleteAll();
         appUserDb.deleteAll();
     }
@@ -215,10 +218,23 @@ class UserControllerTest {
         //Given
         String gitHubUrl = "https://api.github.com/users/supergithubuser/repos";
         GitHubRepo[] mockedRepos = {
-                new GitHubRepo("repo1", "some-url-1"),
-                new GitHubRepo("repo2", "some-url-2")
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
 
         };
+        watchlistMongoDb.save(WatchlistRepository.builder()
+                .id("123")
+                .repositoryName("repo1")
+                .repositoryWebUrl("some-url-1")
+                .build());
         userDb.save(new User("supergithubuser", "someavatar"));
 
 
@@ -235,8 +251,18 @@ class UserControllerTest {
         // Then
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(new UserRepository[]{
-                new UserRepository("repo1", "some-url-1"),
-                new UserRepository("repo2", "some-url-2")
+                UserRepository.builder()
+                        .id("123")
+                        .repositoryName("repo1")
+                        .repositoryWebUrl("some-url-1")
+                        .onWatchlist(true)
+                        .build(),
+                UserRepository.builder()
+                        .id("234")
+                        .repositoryName("repo2")
+                        .repositoryWebUrl("some-url-2")
+                        .onWatchlist(false)
+                        .build()
         }));
     }
 

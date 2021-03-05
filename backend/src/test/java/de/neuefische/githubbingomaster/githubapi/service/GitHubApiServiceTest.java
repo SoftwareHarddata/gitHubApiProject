@@ -66,9 +66,16 @@ class GitHubApiServiceTest {
         String gitHubUser = "super-user";
         String gitHubUrl = "https://api.github.com/users/" + gitHubUser + "/repos";
         GitHubRepo[] mockedRepos = {
-                new GitHubRepo("repo1", "some-url-1"),
-                new GitHubRepo("repo2", "some-url-2")
-
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
         };
 
         when(restTemplate.getForEntity(gitHubUrl, GitHubRepo[].class)).thenReturn(new ResponseEntity<>(mockedRepos, HttpStatus.OK));
@@ -78,8 +85,16 @@ class GitHubApiServiceTest {
 
         // THEN
         assertThat(actual, is(List.of(
-                new GitHubRepo("repo1", "some-url-1"),
-                new GitHubRepo("repo2", "some-url-2")
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
         )));
     }
 
@@ -97,6 +112,55 @@ class GitHubApiServiceTest {
 
         // THEN
         assertThat(actual, is(new ArrayList<>()));
+
+    }
+
+    @Test
+    @DisplayName("Get Repository should call githubapi and return repository")
+    public void getRepositoryFromGithub(){
+        //GIVEN
+        String gitHubUser = "super-user";
+        String gitHubRepo = "super-repo";
+        String gitHubUrl = "https://api.github.com/repos/super-user/super-repo";
+        GitHubRepo mockedRepo  =
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("super-repo")
+                        .repositoryUrl("some-url-2")
+                        .build();
+
+
+        when(restTemplate.getForEntity(gitHubUrl, GitHubRepo.class)).thenReturn(new ResponseEntity<>(mockedRepo, HttpStatus.OK));
+        //WHEN
+
+        Optional<GitHubRepo> response = gitHubApiService.getRepository(gitHubUser, gitHubRepo);
+
+        //THEN
+        assertThat(response.isEmpty(), is(false));
+        assertThat(response.get(), is(GitHubRepo.builder()
+                .id("234")
+                .repository("super-repo")
+                .repositoryUrl("some-url-2")
+                .build()));
+    }
+
+
+    @Test
+    @DisplayName("Get Repository should call github api and return optional empty when repo is not available")
+    public void getRepositoryFromGithubNotFound(){
+        //GIVEN
+        String gitHubUser = "super-user";
+        String gitHubRepo = "super-repo";
+        String gitHubUrl = "https://api.github.com/repos/super-user/super-repo";
+
+
+        when(restTemplate.getForEntity(gitHubUrl, GitHubRepo.class)).thenThrow(RestClientException.class);
+        //WHEN
+
+        Optional<GitHubRepo> response = gitHubApiService.getRepository(gitHubUser, gitHubRepo);
+
+        //THEN
+        assertThat(response.isEmpty(), is(true));
 
     }
 

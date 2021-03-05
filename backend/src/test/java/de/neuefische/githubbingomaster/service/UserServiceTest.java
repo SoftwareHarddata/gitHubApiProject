@@ -1,6 +1,7 @@
 package de.neuefische.githubbingomaster.service;
 
 import de.neuefische.githubbingomaster.db.UserMongoDb;
+import de.neuefische.githubbingomaster.db.WatchlistMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
@@ -17,15 +18,15 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class UserServiceTest {
 
     private final GitHubApiService gitHubApiService = mock(GitHubApiService.class);
     private final UserMongoDb userDb = mock(UserMongoDb.class);
-    private final UserService userService = new UserService(gitHubApiService, userDb);
+    private final WatchlistMongoDb watchlistDb = mock(WatchlistMongoDb.class);
+    private final UserService userService = new UserService(gitHubApiService, userDb, watchlistDb);
 
     @Test
     @DisplayName("A new user whose name is a github login is added")
@@ -145,9 +146,20 @@ class UserServiceTest {
         //Given
         String username = "mr-foobar";
         when(gitHubApiService.getUserRepos(username)).thenReturn(List.of(
-                new GitHubRepo("repository1", "some-url-1"),
-                new GitHubRepo("repository2", "some-url-2")
+                GitHubRepo.builder()
+                        .id("123")
+                        .repository("repo1")
+                        .repositoryUrl("some-url-1")
+                        .build(),
+                GitHubRepo.builder()
+                        .id("234")
+                        .repository("repo2")
+                        .repositoryUrl("some-url-2")
+                        .build()
         ));
+
+        when(watchlistDb.existsById("123")).thenReturn(true);
+        when(watchlistDb.existsById("234")).thenReturn(false);
         when(userDb.existsById(username)).thenReturn(true);
 
         // When
@@ -155,11 +167,20 @@ class UserServiceTest {
 
         // Then
         assertThat(repositories.get(), is(List.of(
-                new UserRepository("repository1", "some-url-1"),
-                new UserRepository("repository2", "some-url-2")
+                UserRepository.builder()
+                        .id("123")
+                        .repositoryName("repo1")
+                        .repositoryWebUrl("some-url-1")
+                        .onWatchlist(true)
+                        .build(),
+                UserRepository.builder()
+                        .id("234")
+                        .repositoryName("repo2")
+                        .repositoryWebUrl("some-url-2")
+                        .onWatchlist(false)
+                        .build()
         )));
         verify(userDb).existsById(username);
-
     }
 
     @Test

@@ -1,6 +1,7 @@
 package de.neuefische.githubbingomaster.service;
 
 import de.neuefische.githubbingomaster.db.UserMongoDb;
+import de.neuefische.githubbingomaster.db.WatchlistMongoDb;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.service.GitHubApiService;
 import de.neuefische.githubbingomaster.model.User;
@@ -19,11 +20,13 @@ public class UserService {
 
     private final GitHubApiService gitHubApiService;
     private final UserMongoDb userDb;
+    private final WatchlistMongoDb watchlistDb;
 
     @Autowired
-    public UserService(GitHubApiService gitHubApiService, UserMongoDb userDb) {
+    public UserService(GitHubApiService gitHubApiService, UserMongoDb userDb, WatchlistMongoDb watchlistDb) {
         this.gitHubApiService = gitHubApiService;
         this.userDb = userDb;
+        this.watchlistDb = watchlistDb;
     }
 
     public User addUser(String name) {
@@ -52,7 +55,12 @@ public class UserService {
     public Optional<List<UserRepository>> getRepositories(String name) {
         if (userDb.existsById(name)) {
             return Optional.of(gitHubApiService.getUserRepos(name).stream()
-                    .map(githubRepo -> UserRepository.builder().repositoryName(githubRepo.getRepository()).repositoryWebUrl(githubRepo.getRepositoryUrl()).build())
+                    .map(githubRepo -> UserRepository.builder()
+                            .id(githubRepo.getId())
+                            .repositoryName(githubRepo.getRepository())
+                            .repositoryWebUrl(githubRepo.getRepositoryUrl())
+                            .onWatchlist(watchlistDb.existsById(githubRepo.getId()))
+                            .build())
                     .collect(Collectors.toList()));
         }
         return Optional.empty();

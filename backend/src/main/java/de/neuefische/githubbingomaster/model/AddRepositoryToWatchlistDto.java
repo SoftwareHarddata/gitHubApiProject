@@ -1,18 +1,13 @@
 package de.neuefische.githubbingomaster.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class UserRepository {
-
-    private String id;
+@AllArgsConstructor
+public class AddRepositoryToWatchlistDto {
+    private String username;
     private String repositoryName;
-    private String repositoryWebUrl;
-    private boolean onWatchlist;
 }

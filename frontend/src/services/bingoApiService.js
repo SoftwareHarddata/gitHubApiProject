@@ -1,11 +1,12 @@
 import axios from 'axios'
 
-const baseUrl = '/api/user'
+const userUrl = '/api/user'
+const watchlistUrl = '/api/watchlist'
 
 export const postUser = (name, token) =>
   axios
     .post(
-      baseUrl,
+      userUrl,
       { name },
       {
         headers: {
@@ -17,7 +18,7 @@ export const postUser = (name, token) =>
 
 export const getUsers = (token) =>
   axios
-    .get(baseUrl, {
+    .get(userUrl, {
       headers: {
         Authorization: 'Bearer ' + token,
       },
@@ -26,7 +27,7 @@ export const getUsers = (token) =>
 
 export const getUser = (username, token) =>
   axios
-    .get(`${baseUrl}/${username}`, {
+    .get(`${userUrl}/${username}`, {
       headers: {
         Authorization: 'Bearer ' + token,
       },
@@ -35,9 +36,38 @@ export const getUser = (username, token) =>
 
 export const getUserRepositories = (username, token) =>
   axios
-    .get(`${baseUrl}/${username}/repos`, {
+    .get(`${userUrl}/${username}/repos`, {
       headers: {
         Authorization: 'Bearer ' + token,
       },
     })
     .then((response) => response.data)
+
+export const getWatchlist = (token) =>
+  axios
+    .get(watchlistUrl, {
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+    })
+    .then((response) => response.data)
+
+export const addRepositoryToWatchlist = (username, repositoryName, token) =>
+  axios
+    .post(
+      watchlistUrl,
+      { username, repositoryName },
+      {
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      }
+    )
+    .then((response) => response.data)
+
+export const deleteRepositoryFromWatchlist = (repoId, token) =>
+  axios.delete(`${watchlistUrl}/${repoId}`, {
+    headers: {
+      Authorization: 'Bearer ' + token,
+    },
+  })

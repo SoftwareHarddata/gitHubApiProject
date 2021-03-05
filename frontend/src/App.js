@@ -1,6 +1,6 @@
 import { Switch, Route } from 'react-router-dom'
 import UserDetails from './pages/UserDetails'
-import UserOverview from './pages/UserOverview'
+import Overview from './pages/Overview'
 import Login from './pages/Login'
 import AuthProvider from './auth/AuthProvider'
 import ProtectedRoute from './auth/ProtectedRoute'
@@ -15,7 +15,7 @@ function App() {
           </Route>
 
           <ProtectedRoute exact path="/">
-            <UserOverview />
+            <Overview />
           </ProtectedRoute>
           <ProtectedRoute path="/user/:username">
             <UserDetails />
