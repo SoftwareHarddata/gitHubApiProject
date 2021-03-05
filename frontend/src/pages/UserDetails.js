@@ -7,27 +7,29 @@ import {
     getUserRepositories
 } from '../services/bingoApiService'
 import styled from 'styled-components/macro'
-import UserRepositories from "../components/UserRepositories";
+import UserRepositories from '../components/UserRepositories'
+import { useAuth } from '../auth/AuthContext'
 
 export default function UserDetails() {
-    const {username} = useParams()
-    const [userData, setUserData] = useState()
-    const [userRepositories, setUserRepositories] = useState()
+  const { token } = useAuth()
+  const { username } = useParams()
+  const [userData, setUserData] = useState()
+  const [userRepositories, setUserRepositories] = useState()
 
-    useEffect(() => {
-        getUser(username).then(setUserData)
-        getUserRepositories(username).then(setUserRepositories)
-    }, [])
+  useEffect(() => {
+    getUser(username, token).then(setUserData)
+    getUserRepositories(username, token).then(setUserRepositories)
+  }, [username])
 
-    if (!userData) {
-        return (
-            <section>
-                <p>Loading</p>
-            </section>
-        )
-    }
+  if (!userData) {
+    return (
+      <section>
+        <p>Loading</p>
+      </section>
+    )
+  }
 
-    const toggleWatchlist = (updateRepo) => {
+  const toggleWatchlist = (updateRepo) => {
         if (updateRepo.onWatchlist) {
             deleteRepositoryFromWatchlist(updateRepo)
             updateRepo.onWatchlist = false;
@@ -44,11 +46,12 @@ export default function UserDetails() {
         <UserDetailsContainer>
             <img src={userData.avatar} alt={userData.name}/>
             <span className="user-name">{userData.name}</span>
-            {userRepositories && <UserRepositories userRepositories={userRepositories}
-                                                   toggleWatchlist={toggleWatchlist}/>}
-            {!userRepositories && <span>Loading repositories</span>}
-        </UserDetailsContainer>
-    )
+            {userRepositories && (<UserRepositories userRepositories={userRepositories}
+                                                   toggleWatchlist={toggleWatchlist}/>
+      )}
+      {!userRepositories && <span>Loading repositories</span>}
+    </UserDetailsContainer>
+  )
 }
 
 const UserDetailsContainer = styled.section`

@@ -2,17 +2,45 @@ import axios from 'axios'
 
 const baseUrl = '/api/user'
 
-export const postUser = (username) =>
-    axios.post(baseUrl, {username}).then((response) => response.data)
+export const postUser = (name, token) =>
+  axios
+    .post(
+      baseUrl,
+      { name },
+      {
+        headers: {
+          Authorization: 'Bearer ' + token,
+        },
+      }
+    )
+    .then((response) => response.data)
 
-export const getUsers = () =>
-    axios.get(baseUrl).then((response) => response.data)
+export const getUsers = (token) =>
+  axios
+    .get(baseUrl, {
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+    })
+    .then((response) => response.data)
 
-export const getUser = (username) =>
-    axios.get(`${baseUrl}/${username}`).then((response) => response.data)
+export const getUser = (username, token) =>
+  axios
+    .get(`${baseUrl}/${username}`, {
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+    })
+    .then((response) => response.data)
 
-export const getUserRepositories = (username) =>
-    axios.get(`${baseUrl}/${username}/repos`).then((response) => response.data)
+export const getUserRepositories = (username, token) =>
+  axios
+    .get(`${baseUrl}/${username}/repos`, {
+      headers: {
+        Authorization: 'Bearer ' + token,
+      },
+    })
+    .then((response) => response.data)
 
 export const getWatchlist = () =>
     axios.get(`${baseUrl}/watchlist`).then((response)=>response.data)
