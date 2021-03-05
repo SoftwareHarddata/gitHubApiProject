@@ -1,10 +1,10 @@
-import {useParams} from 'react-router-dom'
-import {useEffect, useState} from 'react'
+import { useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import {
-    addRepositoryToWatchlist,
-    deleteRepositoryFromWatchlist,
-    getUser,
-    getUserRepositories
+  addRepositoryToWatchlist,
+  deleteRepositoryFromWatchlist,
+  getUser,
+  getUserRepositories,
 } from '../services/bingoApiService'
 import styled from 'styled-components/macro'
 import UserRepositories from '../components/UserRepositories'
@@ -30,24 +30,40 @@ export default function UserDetails() {
   }
 
   const toggleWatchlist = (updateRepo) => {
-        if (updateRepo.onWatchlist) {
-            deleteRepositoryFromWatchlist(updateRepo)
-            updateRepo.onWatchlist = false;
-            setUserRepositories(([updateRepo, ...userRepositories.filter((repository) =>
-                repository.id !== updateRepo.id)]))
-        } else {
-            addRepositoryToWatchlist(updateRepo, username)
-                .then((response) => setUserRepositories(([response, ...userRepositories.filter((repository) =>
-                    repository.id !== response.id)])))
-        }
+    if (updateRepo.onWatchlist) {
+      deleteRepositoryFromWatchlist(updateRepo.id, token)
+      updateRepo.onWatchlist = false
+      setUserRepositories([
+        updateRepo,
+        ...userRepositories.filter(
+          (repository) => repository.id !== updateRepo.id
+        ),
+      ])
+    } else {
+      addRepositoryToWatchlist(
+        username,
+        updateRepo.repositoryName,
+        token
+      ).then((response) =>
+        setUserRepositories([
+          response,
+          ...userRepositories.filter(
+            (repository) => repository.id !== response.id
+          ),
+        ])
+      )
     }
+  }
 
-    return (
-        <UserDetailsContainer>
-            <img src={userData.avatar} alt={userData.name}/>
-            <span className="user-name">{userData.name}</span>
-            {userRepositories && (<UserRepositories userRepositories={userRepositories}
-                                                   toggleWatchlist={toggleWatchlist}/>
+  return (
+    <UserDetailsContainer>
+      <img src={userData.avatar} alt={userData.name} />
+      <span className="user-name">{userData.name}</span>
+      {userRepositories && (
+        <UserRepositories
+          userRepositories={userRepositories}
+          toggleWatchlist={toggleWatchlist}
+        />
       )}
       {!userRepositories && <span>Loading repositories</span>}
     </UserDetailsContainer>
