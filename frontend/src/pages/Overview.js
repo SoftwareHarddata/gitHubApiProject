@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import {
-  deleteRepositoryFromWatchlist,
-  getUsers,
-  getWatchlist,
-  postUser,
+    deleteRepositoryFromWatchlist, getPullRequestList,
+    getUsers,
+    getWatchlist,
+    postUser,
 } from '../services/bingoApiService'
 import AddNewUser from '../components/AddNewUser'
 import UserList from '../components/UserList'
@@ -43,8 +43,12 @@ export default function Overview() {
             .catch((error) => console.error(error))
 
     const repoDetails = (username, repository) => {
-        return <Redirect to="/" />
-        //return <Redirect to={`/repo/${username}/${repository.repositoryName}`}/>
+        console.log("test")
+        getPullRequestList(username, repository, token)
+            .then((response) => response.data)
+
+
+
     }
 
   return (

@@ -9,10 +9,22 @@ import {
 import styled from 'styled-components/macro'
 import UserRepositories from '../components/UserRepositories'
 import { useAuth } from '../auth/AuthContext'
+import WatchlistItem from "../components/WatchlistItem";
+import PullRequestItem from "../components/PullRequestItem";
 
-export default function RepositoryDetails() {
+export default function RepositoryDetails({pullRequestList} ) {
 
-    return <></>
+    return (
+        <ul>
+
+            {pullRequestList.map((pullRequest) =>
+                <li key={pullRequest.id}>
+                <PullRequestItem key={pullRequest.id}
+                                 pullRequest={pullRequest} />
+                </li>)}
+
+        </ul>
+    )
 }
 
 

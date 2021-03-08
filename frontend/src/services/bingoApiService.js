@@ -2,6 +2,7 @@ import axios from 'axios'
 
 const userUrl = '/api/user'
 const watchlistUrl = '/api/watchlist'
+const pullRequestUrl ='/api/pullrequests'
 
 export const postUser = (name, token) =>
   axios
@@ -71,3 +72,12 @@ export const deleteRepositoryFromWatchlist = (repoId, token) =>
       Authorization: 'Bearer ' + token,
     },
   })
+
+export const getPullRequestList = (username, repositoryName, token) =>
+    axios
+        .get(`${pullRequestUrl}/${username}/${repositoryName}`, {
+            headers: {
+                Authorization: 'Bearer ' + token,
+            },
+        })
+        .then((response) => response.data)

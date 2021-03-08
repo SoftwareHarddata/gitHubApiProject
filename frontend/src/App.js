@@ -21,7 +21,7 @@ function App() {
           <ProtectedRoute path="/user/:username">
             <UserDetails />
           </ProtectedRoute>
-          <ProtectedRoute path="/repo/:username/:reponame">
+          <ProtectedRoute path="/repo/details">
             <RepositoryDetails />
           </ProtectedRoute>
         </Switch>

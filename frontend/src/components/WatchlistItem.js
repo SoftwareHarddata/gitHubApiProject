@@ -1,16 +1,16 @@
 import styled from 'styled-components/macro'
 import {Link, Redirect, Route, useParams} from 'react-router-dom'
 
-export default function WatchlistItem({ repository, onDeleteWatchlistItem, onClick }) {
+export default function WatchlistItem({ repository, onDeleteWatchlistItem }) {
 
     const { username } = useParams()
 
   return (
       <WatchListItemContainer>
           <a target="_blank" rel="noreferrer" href={repository.repositoryWebUrl}>{repository.repositoryName}</a>
-          <button onClick={() => onClick(username,repository)} type="button">
+          <Link to='/repo/details'> <button type="button">
               Details
-          </button>
+          </button></Link>
           <button onClick={() => onDeleteWatchlistItem(repository)} type="button">
               Delete
           </button>
