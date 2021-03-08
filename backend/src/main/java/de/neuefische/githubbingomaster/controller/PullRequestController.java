@@ -4,6 +4,7 @@ import de.neuefische.githubbingomaster.model.PullRequest;
 import de.neuefische.githubbingomaster.service.PullRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,8 +21,8 @@ public class PullRequestController {
         this.pullRequestService = pullRequestService;
     }
 
-    @GetMapping
-    public List<PullRequest> getPullRequests(String username, String repositoryName ) {
+    @GetMapping("{username}/{repositoryName}")
+    public List<PullRequest> getPullRequests(@PathVariable String username, @PathVariable String repositoryName) {
         return pullRequestService.getPullRequests(username, repositoryName);
     }
 }

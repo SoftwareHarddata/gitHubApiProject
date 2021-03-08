@@ -66,7 +66,7 @@ public class GitHubApiService {
     }
 
     public List<GitHubPullRequest> getUserRepoPullRequests(String username, String repositoryName) {
-        String url = userBaseUrl + "/repos/" + username + "/" + repositoryName + "/pulls?state=all";
+        String url = repositoryBaseUrl + "/" + username + "/" + repositoryName + "/pulls?state=all";
 
         try {
             ResponseEntity<GitHubPullRequest[]> response = restTemplate.getForEntity(url, GitHubPullRequest[].class);
