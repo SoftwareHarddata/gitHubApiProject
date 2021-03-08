@@ -2,7 +2,7 @@ package de.neuefische.githubbingomaster.githubapi.service;
 
 import de.neuefische.githubbingomaster.githubapi.model.GitHubProfile;
 import de.neuefische.githubbingomaster.githubapi.model.GitHubRepo;
-import de.neuefische.githubbingomaster.model.UserRepository;
+import de.neuefische.githubbingomaster.githubapi.model.GitHubPullRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -64,4 +64,17 @@ public class GitHubApiService {
             return Optional.empty();
         }
     }
+
+    public List<GitHubPullRequest> getUserRepoPullRequests(String username, String repositoryName) {
+        String url = userBaseUrl + "/repos/" + username + "/" + repositoryName + "/pulls?state=all";
+
+        try {
+            ResponseEntity<GitHubPullRequest[]> response = restTemplate.getForEntity(url, GitHubPullRequest[].class);
+            return List.of(response.getBody());
+        } catch (RestClientException e) {
+            log.warn(e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
 }

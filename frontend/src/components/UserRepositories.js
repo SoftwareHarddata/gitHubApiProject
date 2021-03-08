@@ -7,9 +7,8 @@ export default function UserRepositories({userRepositories, toggleWatchlist}) {
         <List>
             {userRepositories.map((repository, i) => (
                 <li key={i}>
-                    <Link target="_blank" to={repository.repositoryWebUrl}>
-                        {repository.repositoryName}
-                    </Link>
+                    <a target="_blank" rel="noreferrer" href={repository.repositoryWebUrl}>
+                        {repository.repositoryName}</a>
                     <button onClick={() => {toggleWatchlist(repository)}} type="button">
                         {repository.onWatchlist ? "Delete" : "Favorite"}
                     </button>

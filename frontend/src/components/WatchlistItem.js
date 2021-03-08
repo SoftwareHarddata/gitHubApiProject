@@ -4,8 +4,7 @@ import {Link, Redirect, Route} from 'react-router-dom'
 export default function WatchlistItem({ repository, onDeleteWatchlistItem }) {
   return (
     <WatchListItemContainer>
-      <Link to={repository.repositoryWebUrl}>{repository.repositoryName}</Link>
-
+        <a target="_blank" rel="noreferrer" href={repository.repositoryWebUrl}>{repository.repositoryName}</a>
         <button onClick={() => <Redirect to="/" />} type="button">
             Details
         </button>
